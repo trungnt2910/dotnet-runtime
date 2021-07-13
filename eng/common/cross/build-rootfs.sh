@@ -215,6 +215,11 @@ while :; do
             __BuildArch=x64
             __SkipUnmount=1
             ;;
+        haiku)
+            __CodeName=haiku
+            __BuildArch=x64
+            __SkipUnmount=1
+            ;;
         --skipunmount)
             __SkipUnmount=1
             ;;
@@ -250,7 +255,7 @@ if [ -d "$__RootfsDir" ]; then
     if [ $__SkipUnmount == 0 ]; then
         umount $__RootfsDir/* || true
     fi
-    rm -rf $__RootfsDir
+    #rm -rf $__RootfsDir
 fi
 
 mkdir -p $__RootfsDir
@@ -347,6 +352,30 @@ elif [[ "$__CodeName" == "illumos" ]]; then
     wget -P "$__RootfsDir"/usr/include/net https://raw.githubusercontent.com/illumos/illumos-gate/master/usr/src/uts/common/io/bpf/net/dlt.h
     wget -P "$__RootfsDir"/usr/include/netpacket https://raw.githubusercontent.com/illumos/illumos-gate/master/usr/src/uts/common/inet/sockmods/netpacket/packet.h
     wget -P "$__RootfsDir"/usr/include/sys https://raw.githubusercontent.com/illumos/illumos-gate/master/usr/src/uts/common/sys/sdt.h
+elif [[ "$__CodeName" == "haiku" ]]; then
+    # For now, assume we're building for x86_64
+    mkdir "$__RootfsDir/tmp"
+    pushd "$__RootfsDir/tmp"
+    git clone --depth=1 https://review.haiku-os.org/haiku
+    git clone --depth=1 https://github.com/haiku/buildtools
+    # Build jam
+    pushd buildtools/jam
+    make
+    popd
+    # Configure cross tools
+    mkdir "$__RootfsDir/generated"
+    pushd "$__RootfsDir/generated"
+    "$__RootfsDir/tmp/haiku/configure" --cross-tools-source "$__RootfsDir/tmp/buildtools" --build-cross-tools x86_64
+    "$__RootfsDir/tmp/buildtools/jam/jam0" -q haiku.hpkg haiku_devel.hpkg '<build>package'
+    popd
+    # Setup the sysroot
+    mkdir -p "$__RootfsDir/boot/system"
+    for file in "$__RootfsDir/generated/objects/haiku/x86_64/packaging/packages/"*.hpkg; do
+        "$__RootfsDir/generated/objects/linux/x86_64/release/tools/package/package" extract -C "$__RootfsDir/boot/system" "$file"
+    done
+    for file in "$__RootfsDir/generated/download/"*.hpkg; do
+        "$__RootfsDir/generated/objects/linux/x86_64/release/tools/package/package" extract -C "$__RootfsDir/boot/system" "$file"
+    done
 elif [[ -n $__CodeName ]]; then
     qemu-debootstrap --arch $__UbuntuArch $__CodeName $__RootfsDir $__UbuntuRepo
     cp $__CrossDir/$__BuildArch/sources.list.$__CodeName $__RootfsDir/etc/apt/sources.list

@@ -63,6 +63,11 @@ if (NOT CLR_CMAKE_TARGET_BROWSER)
     list (APPEND NATIVE_SOURCES pal_networkchange.c)
 endif ()
 
+if (CLR_CMAKE_TARGET_HAIKU)
+    list (APPEND NATIVE_SOURCES
+        pal_teaminfo.c)
+endif ()
+
 include(${CMAKE_CURRENT_LIST_DIR}/extra_libs.cmake)
 
 set(NATIVE_LIBS_EXTRA)

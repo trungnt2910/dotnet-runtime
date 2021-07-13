@@ -106,6 +106,13 @@
         <PackageTargetRuntime>browser</PackageTargetRuntime>
       </PropertyGroup>
     </When>
+    <When Condition="'$(TargetFrameworkSuffix)' == 'Haiku'">
+      <PropertyGroup>
+        <TargetsUnix>true</TargetsUnix>
+        <TargetsHaiku>true</TargetsHaiku>
+        <PackageTargetRuntime>haiku</PackageTargetRuntime>
+      </PropertyGroup>
+    </When>
     <When Condition="'$(TargetFrameworkSuffix)' == ''">
       <PropertyGroup>
         <TargetsAnyOS>true</TargetsAnyOS>

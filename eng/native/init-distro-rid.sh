@@ -89,6 +89,8 @@ initNonPortableDistroRid()
         __uname_version=$(uname -v)
         __solaris_major_version=$(echo "${__uname_version%.*}")
         nonPortableBuildID=solaris."$__solaris_major_version"-"$buildArch"
+    elif [ "$targetOs" = "Haiku" ]; then
+        nonPortableBuildID="haiku.r1-$buildArch"
     fi
 
     if [ -n "${nonPortableBuildID}" ]; then
@@ -190,6 +192,8 @@ initDistroRidGlobal()
                 distroRid="illumos-$buildArch"
             elif [ "$targetOs" = "Solaris" ]; then
                 distroRid="solaris-$buildArch"
+            elif [ "$targetOs" = "Haiku" ]; then
+                distroRid="haiku-$buildArch"
             fi
         fi
 

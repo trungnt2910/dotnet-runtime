@@ -131,6 +131,7 @@
     <_portableOS Condition="'$(_runtimeOS)' == 'tvos'">tvos</_portableOS>
     <_portableOS Condition="'$(_runtimeOS)' == 'tvOSSimulator'">tvossimulator</_portableOS>
     <_portableOS Condition="'$(_runtimeOS)' == 'android'">android</_portableOS>
+    <_portableOS Condition="'$(_runtimeOS)' == 'Haiku'">haiku</_portableOS>
 
     <_runtimeOS Condition="$(_runtimeOS.StartsWith('tizen'))">linux</_runtimeOS>
     <_runtimeOS Condition="'$(PortableBuild)' == 'true'">$(_portableOS)</_runtimeOS>
@@ -182,7 +183,8 @@
     <TargetsAndroid Condition="'$(TargetOS)' == 'Android'">true</TargetsAndroid>
     <TargetsBrowser Condition="'$(TargetOS)' == 'Browser'">true</TargetsBrowser>
     <TargetsWindows Condition="'$(TargetOS)' == 'windows'">true</TargetsWindows>
-    <TargetsUnix Condition="'$(TargetsFreeBSD)' == 'true' or '$(Targetsillumos)' == 'true' or '$(TargetsSolaris)' == 'true' or '$(TargetsLinux)' == 'true' or '$(TargetsNetBSD)' == 'true' or '$(TargetsOSX)' == 'true' or '$(TargetsMacCatalyst)' == 'true' or '$(TargetstvOS)' == 'true' or '$(TargetsiOS)' == 'true' or '$(TargetsAndroid)' == 'true'">true</TargetsUnix>
+    <TargetsHaiku Condition="'$(TargetOS)' == 'Haiku'">true</TargetsHaiku>
+    <TargetsUnix Condition="'$(TargetsHaiku)' == 'true' or '$(TargetsFreeBSD)' == 'true' or '$(Targetsillumos)' == 'true' or '$(TargetsSolaris)' == 'true' or '$(TargetsLinux)' == 'true' or '$(TargetsNetBSD)' == 'true' or '$(TargetsOSX)' == 'true' or '$(TargetsMacCatalyst)' == 'true' or '$(TargetstvOS)' == 'true' or '$(TargetsiOS)' == 'true' or '$(TargetsAndroid)' == 'true'">true</TargetsUnix>
   </PropertyGroup>
 
   <PropertyGroup>

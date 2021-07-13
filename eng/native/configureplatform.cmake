@@ -196,6 +196,12 @@ if(CLR_CMAKE_HOST_OS STREQUAL Emscripten)
     set(CLR_CMAKE_HOST_BROWSER 1)
 endif(CLR_CMAKE_HOST_OS STREQUAL Emscripten)
 
+if(CLR_CMAKE_HOST_OS STREQUAL Haiku)
+    set(CLR_CMAKE_HOST_UNIX 1)
+    set(CLR_CMAKE_HOST_UNIX_AMD64 1)
+    set(CLAR_CMAKE_HOST_HAIKU 1)
+endif(CLR_CMAKE_HOST_OS STREQUAL Haiku)
+
 #--------------------------------------------
 # This repo builds two set of binaries
 # 1. binaries which execute on target arch machine
@@ -358,6 +364,11 @@ if(CLR_CMAKE_TARGET_OS STREQUAL Emscripten)
     set(CLR_CMAKE_TARGET_LINUX 1)
     set(CLR_CMAKE_TARGET_BROWSER 1)
 endif(CLR_CMAKE_TARGET_OS STREQUAL Emscripten)
+
+if(CLR_CMAKE_TARGET_OS STREQUAL Haiku)
+    set(CLR_CMAKE_TARGET_UNIX 1)
+    set(CLR_CMAKE_TARGET_HAIKU 1)
+endif(CLR_CMAKE_TARGET_OS STREQUAL Haiku)
 
 if(CLR_CMAKE_TARGET_UNIX)
     if(CLR_CMAKE_TARGET_ARCH STREQUAL x64)

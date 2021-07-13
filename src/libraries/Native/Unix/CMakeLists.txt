@@ -216,7 +216,7 @@ else ()
    add_compile_options(-fstack-protector-strong)
 endif ()
 
-if (CLR_CMAKE_TARGET_LINUX)
+if (CLR_CMAKE_TARGET_LINUX OR CLR_CMAKE_TARGET_HAIKU)
    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_GNU_SOURCE")
 endif ()
 

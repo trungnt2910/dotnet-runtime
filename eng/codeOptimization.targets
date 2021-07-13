@@ -10,6 +10,7 @@
            See issue https://github.com/dotnet/runtime/issues/33303
       -->
       <IsEligibleForNgenOptimization Condition="'$(TargetOS)' == 'OSX' or '$(TargetsMobile)' == 'true'">false</IsEligibleForNgenOptimization>
+      <IsEligibleForNgenOptimization Condition="'$(TargetOS)' == 'Haiku'">false</IsEligibleForNgenOptimization>
   </PropertyGroup>
 
   <Target Name="SetApplyNgenOptimization"

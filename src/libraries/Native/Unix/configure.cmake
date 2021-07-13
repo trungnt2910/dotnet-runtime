@@ -46,6 +46,8 @@ elseif (CLR_CMAKE_TARGET_SUNOS)
     # requires /opt/tools when building in Global Zone (GZ)
     include_directories(SYSTEM /opt/local/include /opt/tools/include)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fstack-protector")
+elseif (CLR_CMAKE_TARGET_HAIKU)
+    set(PAL_UNIX_NAME \"HAIKU\")
 else ()
     message(FATAL_ERROR "Unknown platform. Cannot define PAL_UNIX_NAME, used by RuntimeInformation.")
 endif ()
@@ -254,6 +256,12 @@ check_symbol_exists(
 check_symbol_exists(
     ioctl
     sys/ioctl.h
+    HAVE_IOCTL)
+
+# not sure this one is needed
+check_symbol_exists(
+    ioctl,
+    unistd.h
     HAVE_IOCTL)
 
 check_symbol_exists(
@@ -598,6 +606,11 @@ elseif(CLR_CMAKE_TARGET_ANDROID)
     set(HAVE_CLOCK_REALTIME 1)
 elseif(CLR_CMAKE_TARGET_BROWSER)
     set(HAVE_FORK 0)
+elseif(CLR_CMAKE_TARGET_HAIKU)
+     set(HAVE_SHM_OPEN_THAT_WORKS_WELL_ENOUGH_WITH_MMAP 1)
+     set(HAVE_CLOCK_MONOTONIC 1)
+     set(HAVE_CLOCK_REALTIME 1)
+     unset(HAVE_ALIGNED_ALLOC)
 else()
     if(CLR_CMAKE_TARGET_OSX)
         unset(HAVE_ALIGNED_ALLOC) # only exists on OSX 10.15+

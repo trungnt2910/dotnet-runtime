@@ -18,7 +18,7 @@
     <ILLinkSharedDirectory>$(MSBuildThisFileDirectory)ILLink\</ILLinkSharedDirectory>
     <IsBigEndian Condition="'$(Platform)' == 's390x'">true</IsBigEndian>
     <Is64Bit Condition="'$(Platform)' == 'arm64' or '$(Platform)' == 'x64' or '$(Platform)' == 's390x'">true</Is64Bit>
-    <UseMinimalGlobalizationData Condition="'$(TargetsiOS)' == 'true' or '$(TargetstvOS)' == 'true' or '$(TargetsBrowser)' == 'true'">true</UseMinimalGlobalizationData>
+    <UseMinimalGlobalizationData Condition="'$(TargetsiOS)' == 'true' or '$(TargetstvOS)' == 'true' or '$(TargetsBrowser)' == 'true' or '$(TargetsHaiku)' == 'true'">true</UseMinimalGlobalizationData>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="'$(IsBigEndian)' == 'true'">$(DefineConstants);BIGENDIAN</DefineConstants>
@@ -38,6 +38,7 @@
     <DefineConstants Condition="'$(TargetsAndroid)' == 'true'">$(DefineConstants);TARGET_ANDROID</DefineConstants>
     <DefineConstants Condition="'$(TargetsLinux)' == 'true'">$(DefineConstants);TARGET_LINUX</DefineConstants>
     <DefineConstants Condition="'$(TargetsFreeBSD)' == 'true'">$(DefineConstants);TARGET_FREEBSD</DefineConstants>
+    <DefineConstants Condition="'$(TargetsHaiku)' == 'true'">$(DefineConstants);TARGET_HAIKU</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <ILLinkSubstitutionsXmls Include="$(ILLinkSharedDirectory)ILLink.Substitutions.Shared.xml" />
@@ -1904,7 +1905,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)System\Threading\Semaphore.Windows.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)System\Threading\EventWaitHandle.Windows.cs" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetsUnix)' == 'true' or '$(TargetsBrowser)' == 'true'">
+  <ItemGroup Condition="'$(TargetsUnix)' == 'true' or '$(TargetsBrowser)' == 'true' or '$(TargetsHaiku)' == 'true'">
     <Compile Include="$(CommonPath)Interop\Unix\Interop.Errors.cs">
       <Link>Common\Interop\Unix\Interop.Errors.cs</Link>
     </Compile>
@@ -2127,7 +2128,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)System\Threading\TimerQueue.Unix.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)System\TimeZoneInfo.Unix.cs" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetsUnix)' == 'true'">
+  <ItemGroup Condition="'$(TargetsUnix)' == 'true' or '$(TargetsHaiku)' == 'true'">
     <Compile Include="$(CommonPath)Interop\Unix\System.Native\Interop.GetEUid.cs">
       <Link>Common\Interop\Unix\System.Native\Interop.GetEUid.cs</Link>
     </Compile>
@@ -2153,7 +2154,10 @@
              Link="Common\Interop\OSX\Interop.libproc.GetProcessInfoById.cs" />
     <Compile Include="$(CommonPath)Interop\SunOS\procfs\Interop.ProcFsStat.TryReadProcessStatusInfo.cs" Condition="'$(Targetsillumos)' == 'true' or '$(TargetsSolaris)' == 'true'"
              Link="Common\Interop\SunOS\Interop.ProcFsStat.TryReadProcessStatusInfo.cs" />
+    <Compile Include="$(CommonPath)Interop\Haiku\Interop.Process.GetTeamInfo.cs" Condition="'$(TargetsHaiku)' == 'true'"
+             Link="Common\Interop\Haiku\Interop.Process.GetTeamInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)System\Environment.Unix.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)System\Environment.Haiku.cs" Condition="'$(TargetsHaiku)' == 'true'" />
     <Compile Include="$(MSBuildThisFileDirectory)System\Environment.FreeBSD.cs" Condition="'$(TargetsFreeBSD)' == 'true'" />
     <Compile Include="$(MSBuildThisFileDirectory)System\Environment.Linux.cs" Condition="'$(TargetsLinux)' == 'true'" />
     <Compile Include="$(MSBuildThisFileDirectory)System\Environment.OSX.cs" Condition="'$(IsOSXLike)' == 'true'" />

@@ -88,7 +88,8 @@ build_cross_architecture_components()
         __SkipCrossArchBuild=0
     else
         # not supported
-        return
+        #return
+        echo "build_cross_architecture_components"
     fi
 
     __CMakeBinDir="$crossArchBinDir"
