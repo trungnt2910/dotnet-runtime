@@ -30,6 +30,77 @@ setup_dirs_local()
 
     mkdir -p "$__LogsDir"
     mkdir -p "$__MsbuildDebugLogsDir"
+
+    if [[ "$__CrossBuild" == 1 ]]; then
+        mkdir -p "$__CrossComponentBinDir"
+    fi
+}
+
+restore_optdata()
+{
+    local OptDataProjectFilePath="$__ProjectRoot/.nuget/optdata/optdata.csproj"
+    if [[ "$__SkipRestoreOptData" == 0 && "$__IsMSBuildOnNETCoreSupported" == 1 ]]; then
+        echo "Restoring the OptimizationData package"
+        "$__RepoRootDir/eng/common/msbuild.sh" /clp:nosummary $__ArcadeScriptArgs \
+                                               $OptDataProjectFilePath /t:Restore /m \
+                                               -bl:"$__LogsDir/OptRestore_$__ConfigTriplet.binlog" \
+                                               $__CommonMSBuildArgs $__UnprocessedBuildArgs \
+                                               /nodereuse:false
+        local exit_code="$?"
+        if [[ "$exit_code" != 0 ]]; then
+            echo "${__ErrMsgPrefix}Failed to restore the optimization data package."
+            exit "$exit_code"
+        fi
+    fi
+
+    if [[ "$__PgoOptimize" == 1 && "$__IsMSBuildOnNETCoreSupported" == 1 ]]; then
+        # Parse the optdata package versions out of msbuild so that we can pass them on to CMake
+
+        local PgoDataPackagePathOutputFile="${__IntermediatesDir}/optdatapath.txt"
+
+        # Writes into ${PgoDataPackagePathOutputFile}
+        "$__RepoRootDir/eng/common/msbuild.sh" /clp:nosummary $__ArcadeScriptArgs $OptDataProjectFilePath /t:DumpPgoDataPackagePath \
+                                            ${__CommonMSBuildArgs} /p:PgoDataPackagePathOutputFile=${PgoDataPackagePathOutputFile} \
+                                            -bl:"$__LogsDir/PgoVersionRead_$__ConfigTriplet.binlog" > /dev/null 2>&1
+        local exit_code="$?"
+        if [[ "$exit_code" != 0 || ! -f "${PgoDataPackagePathOutputFile}" ]]; then
+            echo "${__ErrMsgPrefix}Failed to get PGO data package path."
+            exit "$exit_code"
+        fi
+
+        __PgoOptDataPath=$(<"${PgoDataPackagePathOutputFile}")
+    fi
+}
+
+build_cross_architecture_components()
+{
+    local intermediatesForBuild="$__IntermediatesDir/Host$__CrossArch/crossgen"
+    local crossArchBinDir="$__BinDir/$__CrossArch"
+
+    mkdir -p "$intermediatesForBuild"
+    mkdir -p "$crossArchBinDir"
+
+    __SkipCrossArchBuild=1
+    # check supported cross-architecture components host(__HostArch)/target(__BuildArch) pair
+    if [[ ("$__BuildArch" == "arm" || "$__BuildArch" == "armel") && ("$__CrossArch" == "x86" || "$__CrossArch" == "x64") ]]; then
+        __SkipCrossArchBuild=0
+    elif [[ "$__BuildArch" == "arm64" && "$__CrossArch" == "x64" ]]; then
+        __SkipCrossArchBuild=0
+    else
+        # not supported
+        #return
+        echo "build_cross_architecture_components"
+    fi
+
+    __CMakeBinDir="$crossArchBinDir"
+    CROSSCOMPILE=0
+    export __CMakeBinDir CROSSCOMPILE
+
+    __CMakeArgs="-DCLR_CMAKE_TARGET_ARCH=$__BuildArch -DCLR_CROSS_COMPONENTS_BUILD=1 $__CMakeArgs"
+    build_native "$__TargetOS" "$__CrossArch" "$__ProjectRoot" "$intermediatesForBuild" "crosscomponents" "$__CMakeArgs" "cross-architecture components"
+
+    CROSSCOMPILE=1
+    export CROSSCOMPILE
 }
 
 handle_arguments_local() {

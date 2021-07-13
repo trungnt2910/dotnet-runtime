@@ -34,6 +34,8 @@ namespace System
         "ILLUMOS"
 #elif TARGET_SOLARIS
         "SOLARIS"
+#elif TARGET_HAIKU
+        "HAIKU"
 #else
 #error Unknown OS, add a corresponding TARGET_* constant to System.Private.CoreLib.Shared.projitems
 #endif
@@ -94,6 +96,7 @@ namespace System
                         case PlatformID.Xbox: os = "Xbox "; break;
                         case PlatformID.MacOSX: os = "Mac OS X "; break;
                         case PlatformID.Other: os = "Other "; break;
+                        case PlatformID.Haiku: os = "Haiku "; break;
                         default:
                             Debug.Fail($"Unknown platform {_platform}");
                             os = "<unknown> "; break;
@@ -325,5 +328,15 @@ namespace System
             return current.Revision >= revision
                 || (current.Revision == -1 && revision == 0); // it is unavailable on OSX and Environment.OSVersion.Version.Revision returns -1
         }
+
+        public static bool IsHaiku() =>
+#if TARGET_HAIKU
+            true;
+#else
+            false;
+#endif
+
+        public static bool IsHaikuAtLeast(int major, int minor = 0, int build = 0, int revision = 0)
+            => IsHaiku() && IsOSVersionAtLeast(major, minor, build, revision);
     }
 }

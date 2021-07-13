@@ -281,6 +281,11 @@ while :; do
             __BuildArch=x64
             __SkipUnmount=1
             ;;
+        haiku)
+            __CodeName=haiku
+            __BuildArch=x64
+            __SkipUnmount=1
+            ;;
         --skipunmount)
             __SkipUnmount=1
             ;;

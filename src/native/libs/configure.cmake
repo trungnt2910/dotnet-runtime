@@ -220,6 +220,12 @@ check_symbol_exists(
     sys/ioctl.h
     HAVE_IOCTL)
 
+# not sure this one is needed
+check_symbol_exists(
+    ioctl,
+    unistd.h
+    HAVE_IOCTL)
+
 check_symbol_exists(
     sched_getaffinity
     "sched.h"
@@ -574,6 +580,11 @@ elseif(CLR_CMAKE_TARGET_ANDROID)
     set(HAVE_CLOCK_REALTIME 1)
 elseif(CLR_CMAKE_TARGET_BROWSER)
     set(HAVE_FORK 0)
+elseif(CLR_CMAKE_TARGET_HAIKU)
+     set(HAVE_SHM_OPEN_THAT_WORKS_WELL_ENOUGH_WITH_MMAP 1)
+     set(HAVE_CLOCK_MONOTONIC 1)
+     set(HAVE_CLOCK_REALTIME 1)
+     unset(HAVE_ALIGNED_ALLOC)
 else()
     if(CLR_CMAKE_TARGET_OSX)
         unset(HAVE_ALIGNED_ALLOC) # only exists on OSX 10.15+

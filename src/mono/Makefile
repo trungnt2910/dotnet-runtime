@@ -4,6 +4,8 @@ LIBRARIES_TESTS_CONFIG=Release
 CORECLR_TESTS_CONFIG=Release
 MONO_RUNTIME_CONFIG=Release
 
+echo "in mono Makefile"
+
 # auto detect configurations for mono runtime and coreclr tests
 ifeq ($(words $(wildcard ../../artifacts/bin/mono/*.*.*)), 1)
 	MONO_RUNTIME_CONFIG := $(word 3,$(subst ., ,$(notdir $(wildcard ../../artifacts/bin/mono/*.*.*))))
