@@ -521,27 +521,29 @@ static int32_t ConvertRLimitResourcesPalToPlatform(RLimitResources value)
             return RLIMIT_CORE;
         case PAL_RLIMIT_AS:
             return RLIMIT_AS;
-#ifdef RLIMIT_RSS
         case PAL_RLIMIT_RSS:
+#ifdef RLIMIT_RSS
             return RLIMIT_RSS;
+#else
+            break;
 #endif
-#ifdef RLIMIT_MEMLOCK
         case PAL_RLIMIT_MEMLOCK:
+#ifdef RLIMIT_MEMLOCK
             return RLIMIT_MEMLOCK;
 #elif defined(RLIMIT_VMEM)
         case PAL_RLIMIT_MEMLOCK:
             return RLIMIT_VMEM;
+#else
+            break;
 #endif
-#ifdef RLIMIT_NPROC
         case PAL_RLIMIT_NPROC:
+#ifdef RLIMIT_NPROC
             return RLIMIT_NPROC;
+#else
+            break;
 #endif
         case PAL_RLIMIT_NOFILE:
             return RLIMIT_NOFILE;
-#if !defined(RLIMIT_RSS) || !(defined(RLIMIT_MEMLOCK) || defined(RLIMIT_VMEM)) || !defined(RLIMIT_NPROC)
-        default:
-            break;
-#endif
     }
 
     assert_msg(false, "Unknown RLIMIT value", (int)value);

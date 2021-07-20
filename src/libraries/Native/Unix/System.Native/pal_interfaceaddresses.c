@@ -16,6 +16,9 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <sys/socket.h>
+#if defined(__HAIKU__)
+#include <sys/sockio.h>
+#endif
 #if HAVE_SYS_SYSCTL_H
 #include <sys/sysctl.h>
 #endif
@@ -329,6 +332,9 @@ int32_t SystemNative_GetNetworkInterfaces(int32_t * interfaceCount, NetworkInter
 
             // OperationalState returns whether the interface can transmit data packets.
             // The administrator must have enabled the interface (IFF_UP), and the cable must be plugged in (IFF_RUNNING).
+            #if defined(__HAIKU__)
+            #define IFF_RUNNING 0
+            #endif
             nii->OperationalState = ((ifaddrsEntry->ifa_flags & (IFF_UP|IFF_RUNNING)) == (IFF_UP|IFF_RUNNING)) ? OperationalStatus_Up : OperationalStatus_Down;
         }
 

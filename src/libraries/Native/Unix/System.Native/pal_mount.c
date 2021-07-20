@@ -12,6 +12,8 @@
 // Check if we should use getmntinfo or /proc/mounts
 #if HAVE_MNTINFO
 #include <sys/mount.h>
+#elif defined(__HAIKU__)
+#include <sys/statvfs.h>
 #else
 #include <sys/statfs.h>
 #if HAVE_SYS_MNTENT_H
@@ -29,7 +31,7 @@
 #endif
 #endif
 
-int32_t SystemNative_GetAllMountPoints(MountPointFound onFound)
+int32_t SystemNative_GetAllMountPoints(MountPointFound onFound __attribute__((unused)))
 {
 #if HAVE_MNTINFO
     // getmntinfo returns pointers to OS-internal structs, so we don't need to worry about free'ing the object
@@ -68,6 +70,9 @@ int32_t SystemNative_GetAllMountPoints(MountPointFound onFound)
     return result;
 }
 
+#elif defined(__HAIKU__)
+    return -1;
+}
 #else
     int result = -1;
     FILE* fp = setmntent("/proc/mounts", MNTOPT_RO);

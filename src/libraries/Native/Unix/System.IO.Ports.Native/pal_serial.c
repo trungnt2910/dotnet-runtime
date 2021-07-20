@@ -29,6 +29,8 @@ intptr_t SystemIoPortsNative_SerialPortOpen(const char * name)
         return fd;
     }
 
+// FIXME: Haiku doesn't have ioctl for exclusive access
+#if !defined(__HAIKU__)
     if (ioctl(fd, TIOCEXCL) != 0)
     {
         // We couldn't get exclusive access to the device file
@@ -37,6 +39,7 @@ intptr_t SystemIoPortsNative_SerialPortOpen(const char * name)
         errno = oldErrno;
         return -1;
     }
+#endif
 
     return fd;
 }
@@ -47,8 +50,11 @@ int SystemIoPortsNative_SerialPortClose(intptr_t handle)
     // some devices don't unlock handles from exclusive access
     // preventing reopening after closing the handle
 
+// FIXME: Haiku doesn't have ioctl for exclusive access
+#if !defined(__HAIKU__)
     // ignoring the error - best effort
-    ioctl(fd, TIOCNXCL);
+    ioctl(fd, TIOCNXCL)
+#endif
     return close(fd);
 }
 

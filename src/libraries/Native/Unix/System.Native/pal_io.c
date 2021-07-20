@@ -1396,7 +1396,13 @@ static int16_t ConvertLockType(int16_t managedLockType)
     }
 }
 
-int64_t SystemNative_GetFileSystemType(intptr_t fd)
+#if defined(__HAIKU__)
+#define UNUSED(x)  UNUSED_ ## x __attribute__((unused))
+#else
+#define UNUSED(x) x
+#endif
+
+int64_t SystemNative_GetFileSystemType(intptr_t UNUSED(fd))
 {
 #if HAVE_STATFS_VFS || HAVE_STATFS_MOUNT
     int statfsRes;
@@ -1405,6 +1411,12 @@ int64_t SystemNative_GetFileSystemType(intptr_t fd)
     // which got deprecated in macOS 10.6, in favor of statfs
     while ((statfsRes = fstatfs(ToFileDescriptor(fd), &statfsArgs)) == -1 && errno == EINTR) ;
     return statfsRes == -1 ? (int64_t)-1 : (int64_t)statfsArgs.f_type;
+#elif defined(__HAIKU__)
+    // Haiku doesn't have an easily accessible method to get the file system type, but
+    // the mountvolume command has an example of getting some of these details, may be
+    // enough to fulfill this function, although it doesn't have the `f_type` values, so
+    // this would also need mapping
+    return (int64_t)-1;
 #else
     #error "Platform doesn't support fstatfs"
 #endif
