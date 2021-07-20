@@ -91,10 +91,12 @@ if (GEN_SHARED_LIB)
         ${VERSION_FILE_PATH}
     )
 
-    target_link_libraries(System.Globalization.Native
-        dl
-        ${FOUNDATION}
-    )
+    if (NOT CLR_CMAKE_TARGET_HAIKU)
+        target_link_libraries(System.Globalization.Native
+            dl
+            ${FOUNDATION}
+        )
+    endif()
 
     install_with_stripped_symbols (System.Globalization.Native PROGRAMS .)
 endif()
@@ -114,7 +116,8 @@ if(NOT CLR_CMAKE_TARGET_OSX AND NOT CLR_CMAKE_TARGET_MACCATALYST AND NOT CLR_CMA
     if (GEN_SHARED_LIB)
         add_custom_command(TARGET System.Globalization.Native POST_BUILD
             COMMENT "Verifying System.Globalization.Native.so dependencies"
-            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../verify-so.sh
+            COMMAND LD_LIBRARY_PATH=${CROSS_ROOTFS}/boot/system/lib
+                ${CMAKE_CURRENT_SOURCE_DIR}/../verify-so.sh
                 $<TARGET_FILE:System.Globalization.Native>
                 "Verification failed. System.Globalization.Native.so has undefined dependencies. These are likely ICU APIs that need to be added to icushim.h."
             VERBATIM
