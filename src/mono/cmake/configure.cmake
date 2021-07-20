@@ -16,6 +16,10 @@ if(C_SUPPORTS_WUNGUARDED_AVAILABILITY)
   set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -Werror=unguarded-availability")
 endif()
 
+if(HOST_HAIKU)
+  set(CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS} -D_REENTRANT -D_GNU_SOURCE -D_BSD_SOURCE -D_POSIX_PTHREAD_SEMANTICS")
+endif()
+
 function(ac_check_headers)
   foreach(arg ${ARGN})
 	check_include_file ("${arg}" FOUND_${arg})
