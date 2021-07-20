@@ -56,7 +56,7 @@ elseif (ILLUMOS)
   set(TOOLCHAIN "x86_64-illumos")
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Haiku")
   set(CMAKE_SYSTEM_PROCESSOR "x86_64")
-  set(TOOLCHAIN "x86_64-unknown-haiku")
+  set(triple "x86_64-unknown-haiku")
 else()
   message(FATAL_ERROR "Arch is ${TARGET_ARCH_NAME}. Only armel, arm, arm64, s390x and x86 are supported!")
 endif()
@@ -132,8 +132,18 @@ elseif(ILLUMOS)
     set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES} -lssp")
     set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} -lssp")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Haiku")
+    # we cross-compile by instructing clang
+    set(CMAKE_C_COMPILER_TARGET ${triple})
+    set(CMAKE_CXX_COMPILER_TARGET ${triple})
+    set(CMAKE_ASM_COMPILER_TARGET ${triple})
     set(CMAKE_SYSROOT "${CROSS_ROOTFS}")
-else()
+    include_directories(SYSTEM ${CROSS_ROOTFS}/boot/system/develop/headers)
+    set(CMAKE_SYSTEM_PREFIX_PATH "${CROSS_ROOTFS}")
+    # a temporary work-around, until can figure out why cmake isn't searching these locations
+    set(CLR_CMAKE_TARGET_HAIKU_INCLUDES "${CROSS_ROOTFS}/boot/system/develop/headers")
+    set(CLR_CMAKE_TARGET_HAIKU_LIBRARIES "${CROSS_ROOTFS}/boot/system/develop/lib")
+    # we could potentially add -lnetwork here
+    else()
     set(CMAKE_SYSROOT "${CROSS_ROOTFS}")
 
     set(CMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN "${CROSS_ROOTFS}/usr")
@@ -187,7 +197,7 @@ endif()
 
 # Specify compile options
 
-if((TARGET_ARCH_NAME MATCHES "^(arm|armel|arm64|s390x)$" AND NOT "$ENV{__DistroRid}" MATCHES "android.*") OR ILLUMOS OR HAIKU)
+if((TARGET_ARCH_NAME MATCHES "^(arm|armel|arm64|s390x)$" AND NOT "$ENV{__DistroRid}" MATCHES "android.*") OR ILLUMOS)
   set(CMAKE_C_COMPILER_TARGET ${TOOLCHAIN})
   set(CMAKE_CXX_COMPILER_TARGET ${TOOLCHAIN})
   set(CMAKE_ASM_COMPILER_TARGET ${TOOLCHAIN})

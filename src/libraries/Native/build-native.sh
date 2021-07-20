@@ -65,6 +65,10 @@ elif [[ "$__TargetOS" == tvOS || "$__TargetOS" == tvOSSimulator ]]; then
 elif [[ "$__TargetOS" == Android && -z "$ROOTFS_DIR" ]]; then
     # nothing to do here
     true
+elif [[ "$__TargetOS" == Haiku ]]; then
+    # do we need to set __CrossBuild?
+    __CrossBuild=1
+    echo "Set CrossBuild for Haiku"
 else
     __CMakeArgs="-DFEATURE_DISTRO_AGNOSTIC_SSL=$__PortableBuild $__CMakeArgs"
     __CMakeArgs="-DCMAKE_STATIC_LIB_LINK=$__StaticLibLink $__CMakeArgs"
@@ -155,6 +159,9 @@ elif [[ "$__TargetOS" == tvOS ]]; then
         echo "Error: Unknown tvOS architecture $__BuildArch."
         exit 1
     fi
+elif [[ "$__TargetOS" == Haiku ]]; then
+    echo "Adding CMAKE_SYSROOT for Haiku, located at $ROOTFS_DIR"
+    __CMakeArgs="-DCMAKE_SYSROOT=$ROOTFS_DIR"
 fi
 
 # Set the remaining variables based upon the determined build configuration

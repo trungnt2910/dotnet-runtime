@@ -6,6 +6,14 @@ macro(append_extra_cryptography_libs NativeLibsExtra)
 
     find_package(OpenSSL)
 
+    if(CLR_CMAKE_TARGET_HAIKU)
+        set(OPENSSL_FOUND 1)
+        set(OPENSSL_INCLUDE_DIR "${CROSS_ROOTFS}/boot/system/develop/headers/openssl")
+        set(OPENSSL_CRYPTO_LIBRARY "libcrypto.so")
+        set(OPENSSL_SSL_LIBRARY "libssl.so")
+        set(OPENSSL_VERSION "1.1")
+    endif()
+
     if(NOT OPENSSL_FOUND)
         message(FATAL_ERROR "!!! Cannot find libssl and System.Security.Cryptography.Native cannot build without it. Try installing libssl-dev (on Linux, but this may vary by distro) or openssl (on macOS) !!!. See the requirements document for your specific operating system: https://github.com/dotnet/runtime/tree/main/docs/workflow/requirements.")
     endif(NOT OPENSSL_FOUND)
