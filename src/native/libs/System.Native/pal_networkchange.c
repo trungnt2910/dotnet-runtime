@@ -10,6 +10,9 @@
 
 #include <errno.h>
 #include <net/if.h>
+#if defined(__HAIKU__)
+#include <stdlib.h>
+#endif
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/uio.h>
@@ -38,6 +41,9 @@ Error SystemNative_CreateNetworkChangeListenerSocket(intptr_t* retSocket)
 
 #elif HAVE_RT_MSGHDR
     int32_t sock = socket(PF_ROUTE, SOCK_RAW, 0);
+#else
+    /* Haiku has neither of the above */
+    int32_t sock = -1;
 #endif
     if (sock == -1)
     {

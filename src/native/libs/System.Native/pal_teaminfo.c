@@ -20,4 +20,25 @@ int32_t SystemNative_NextAreaInfo(int32_t id, int64_t* cookie, void* info, size_
     return _get_next_area_info(id, cookie, (area_info*)info, size);
 }
 
+#else
+
+int32_t SystemNative_TeamInfo(int id, void* info, size_t size)
+{
+    (void)id;
+    (void)info;
+    (void)size;
+    errno = ENOTSUP;
+    return -1;
+}
+
+int32_t SystemNative_NextAreaInfo(int32_t id, int64_t* cookie, void* info, size_t size)
+{
+    (void)id;
+    (void)cookie;
+    (void)info;
+    (void)size;
+    errno = ENOTSUP;
+    return -1;
+}
+
 #endif
