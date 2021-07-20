@@ -305,7 +305,7 @@ namespace System
             false;
 #endif
 
-        public static bool IsHaikuAtLeast(int major, int minor = 0, int build = 0, int revision = 0)
+        public static bool IsHaikuVersionAtLeast(int major, int minor = 0, int build = 0, int revision = 0)
             => IsHaiku() && IsOSVersionAtLeast(major, minor, build, revision);
     }
 }
