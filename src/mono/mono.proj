@@ -287,6 +287,13 @@
       <_MonoBuildEnv Include="TARGET_BUILD_ARCH=x64" />
     </ItemGroup>
 
+    <!-- x64 Haiku cross build options -->
+    <ItemGroup Condition="'$(MonoCrossDir)' != '' and '$(TargetsHaiku)' == 'true' and '$(TargetArchitecture)' == 'x64'">
+      <_MonoCMakeArgs Include="-DCMAKE_TOOLCHAIN_FILE=$([MSBuild]::NormalizePath('$(RepositoryEngineeringDir)', 'common', 'cross', 'toolchain.cmake'))" />
+      <_MonoBuildEnv Include="TARGET_BUILD_ARCH=x64" />
+      <_MonoBuildEnd Include="PKG_CONFIG_PATH=$(MonoCrossDir)/lib/pkgconfg" />
+    </ItemGroup>
+
     <!-- Windows specific options -->
     <ItemGroup Condition="'$(TargetsWindows)' == 'true'">
       <_MonoCPPFLAGS Include="-DWIN32" />
