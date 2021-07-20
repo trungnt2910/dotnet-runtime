@@ -16,7 +16,7 @@ typedef enum
 
 typedef void (*NetworkChangeEvent)(int32_t sock, NetworkChangeKind notificationKind);
 
-PALEXPORT void SystemNative_ReadEvents(int32_t sock, NetworkChangeEvent onNetworkChange);
+PALEXPORT void SystemNative_ReadEvents(int32_t sock, NetworkChangeEvent onNetworkChange) __attribute__((noreturn));
 
 PALEXPORT Error SystemNative_CreateNetworkChangeListenerSocket(int32_t* retSocket);
 
