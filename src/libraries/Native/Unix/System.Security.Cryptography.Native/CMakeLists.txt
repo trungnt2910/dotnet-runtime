@@ -92,7 +92,8 @@ if (GEN_SHARED_LIB)
         if (NOT APPLE)
             add_custom_command(TARGET System.Security.Cryptography.Native.OpenSsl POST_BUILD
                 COMMENT "Verifying System.Security.Cryptography.Native.OpenSsl.so dependencies"
-                COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../verify-so.sh
+                COMMAND LD_LIBRARY_PATH=${CROSS_ROOTFS}/boot/system/lib
+                    ${CMAKE_CURRENT_SOURCE_DIR}/../verify-so.sh
                     $<TARGET_FILE:System.Security.Cryptography.Native.OpenSsl>
                     "Verification failed. System.Security.Cryptography.Native.OpenSsl.so has undefined dependencies. These are likely OpenSSL APIs that need to be added to opensslshim.h"
                 VERBATIM
