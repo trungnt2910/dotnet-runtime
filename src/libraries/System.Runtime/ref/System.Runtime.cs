@@ -4329,6 +4329,8 @@ namespace System
         public static bool IsWatchOSVersionAtLeast(int major, int minor = 0, int build = 0) { throw null; }
         public static bool IsWindows() { throw null; }
         public static bool IsWindowsVersionAtLeast(int major, int minor = 0, int build = 0, int revision = 0) { throw null; }
+        public static bool IsHaiku() { throw null; }
+        public static bool IsHaikuVersionAtLeast(int major, int minor = 0, int build = 0, int revision = 0) { throw null; }
         public override string ToString() { throw null; }
     }
     public partial class OperationCanceledException : System.SystemException
