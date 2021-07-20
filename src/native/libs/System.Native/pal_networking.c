@@ -1869,7 +1869,7 @@ static bool TryGetPlatformSocketOption(int32_t socketOptionLevel, int32_t socket
                     return true;
 
                 // case SocketOptionName_SO_TCP_BSDURGENT:
-
+#if !defined(__HAIKU__)
                 case SocketOptionName_SO_TCP_KEEPALIVE_RETRYCOUNT:
                     *optName = TCP_KEEPCNT;
                     return true;
@@ -1886,7 +1886,7 @@ static bool TryGetPlatformSocketOption(int32_t socketOptionLevel, int32_t socket
                 case SocketOptionName_SO_TCP_KEEPALIVE_INTERVAL:
                     *optName = TCP_KEEPINTVL;
                     return true;
-
+#endif
                 default:
                     return false;
             }
@@ -2342,6 +2342,7 @@ static bool TryConvertProtocolTypePalToPlatform(int32_t palAddressFamily, int32_
     }
 }
 
+#if !defined(__HAIKU__)
 static bool TryConvertProtocolTypePlatformToPal(int32_t palAddressFamily, int platformProtocolType, int32_t* palProtocolType)
 {
     assert(palProtocolType != NULL);
@@ -2463,6 +2464,7 @@ static bool TryConvertProtocolTypePlatformToPal(int32_t palAddressFamily, int pl
             }
     }
 }
+#endif
 
 int32_t SystemNative_Socket(int32_t addressFamily, int32_t socketType, int32_t protocolType, intptr_t* createdSocket)
 {
@@ -2921,27 +2923,32 @@ static int32_t WaitForSocketEventsInner(int32_t port, SocketEvent* buffer, int32
 }
 
 #else
+#define UNUSED(x)  UNUSED_ ## x __attribute__((unused))
+// Haiku does have something similar that we should probably look into
+
 static const size_t SocketEventBufferElementSize = 0;
 
-static SocketEvents GetSocketEvents(int16_t filter, uint16_t flags)
+#if 0
+static SocketEvents GetSocketEvents(int16_t UNUSED(filter), uint16_t UNUSED(flags))
 {
     return SocketEvents_SA_NONE;
 }
-static int32_t CloseSocketEventPortInner(int32_t port)
+#endif
+static int32_t CloseSocketEventPortInner(int32_t UNUSED(port))
 {
     return Error_ENOSYS;
 }
-static int32_t CreateSocketEventPortInner(int32_t* port)
+static int32_t CreateSocketEventPortInner(int32_t* UNUSED(port))
 {
     return Error_ENOSYS;
 }
 static int32_t TryChangeSocketEventRegistrationInner(
-    int32_t port, int32_t socket, SocketEvents currentEvents, SocketEvents newEvents,
-uintptr_t data)
+    int32_t UNUSED(port), int32_t UNUSED(socket), SocketEvents UNUSED(currentEvents), SocketEvents UNUSED(newEvents),
+uintptr_t UNUSED(data))
 {
     return Error_ENOSYS;
 }
-static int32_t WaitForSocketEventsInner(int32_t port, SocketEvent* buffer, int32_t* count)
+static int32_t WaitForSocketEventsInner(int32_t UNUSED(port), SocketEvent* UNUSED(buffer), int32_t* UNUSED(count))
 {
     return Error_ENOSYS;
 }

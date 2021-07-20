@@ -1614,7 +1614,11 @@ static uint32_t MapFileSystemNameToEnum(const char* fileSystemName)
 }
 #endif
 
+#if defined(__HAIKU__)
+uint32_t SystemNative_GetFileSystemType(intptr_t __attribute__((unused)))
+#else
 uint32_t SystemNative_GetFileSystemType(intptr_t fd)
+#endif
 {
 #if HAVE_STATFS_VFS || HAVE_STATFS_MOUNT
     int statfsRes;
@@ -1640,6 +1644,12 @@ uint32_t SystemNative_GetFileSystemType(intptr_t fd)
     if (statfsRes == -1) return 0;
 
     return MapFileSystemNameToEnum(statfsArgs.f_basetype);
+#elif defined(__HAIKU__)
+    // Haiku doesn't have an easily accessible method to get the file system type, but
+    // the mountvolume command has an example of getting some of these details, may be
+    // enough to fulfill this function, although it doesn't have the `f_type` values, so
+    // this would also need mapping
+    return 0;
 #else
     #error "Platform doesn't support fstatfs or fstatvfs"
 #endif

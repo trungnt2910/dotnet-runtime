@@ -107,9 +107,10 @@ int32_t SystemIoPortsNative_TermiosGetAllSignals(intptr_t handle)
 
     if (status & TIOCM_CAR)
         signals |= SignalDcd;
-
+#if !defined(__HAIKU__)
     if (status & TIOCM_RNG)
         signals |= SignalRng;
+#endif
 
     return signals;
 }
@@ -389,6 +390,11 @@ int32_t SystemIoPortsNative_TermiosSetSpeed(intptr_t handle, int32_t speed)
 
 int32_t SystemIoPortsNative_TermiosAvailableBytes(intptr_t handle, int32_t readBuffer)
 {
+#if defined(__HAIKU__)
+    /* FIXME: Haiku doesn't support TIOCOUTQ nor FIONREAD on fds */
+    return -1;
+#define TIOCOUTQ 0
+#endif
     int fd = ToFileDescriptor(handle);
     int32_t bytes;
     if (ioctl (fd, readBuffer ? FIONREAD : TIOCOUTQ, &bytes) == -1)
