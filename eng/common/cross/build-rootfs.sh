@@ -255,7 +255,7 @@ if [ -d "$__RootfsDir" ]; then
     if [ $__SkipUnmount == 0 ]; then
         umount $__RootfsDir/* || true
     fi
-    #rm -rf $__RootfsDir
+    rm -rf $__RootfsDir
 fi
 
 mkdir -p $__RootfsDir
@@ -358,6 +358,13 @@ elif [[ "$__CodeName" == "haiku" ]]; then
     pushd "$__RootfsDir/tmp"
     git clone --depth=1 https://review.haiku-os.org/haiku
     git clone --depth=1 https://github.com/haiku/buildtools
+    # Fetch some patches that haven't been merged yet
+    pushd haiku
+    ## use relative symlinks in _devel package
+    git fetch origin refs/changes/18/4218/2 && git cherry-pick FETCH_HEAD
+    ## add development build profile (slimmer than nightly)
+    git fetch origin refs/changes/64/4164/1 && git cherry-pick FETCH_HEAD
+    popd
     # Build jam
     pushd buildtools/jam
     make
@@ -366,7 +373,9 @@ elif [[ "$__CodeName" == "haiku" ]]; then
     mkdir "$__RootfsDir/generated"
     pushd "$__RootfsDir/generated"
     "$__RootfsDir/tmp/haiku/configure" --cross-tools-source "$__RootfsDir/tmp/buildtools" --build-cross-tools x86_64
-    "$__RootfsDir/tmp/buildtools/jam/jam0" -q haiku.hpkg haiku_devel.hpkg '<build>package'
+    # Build haiku packages
+    echo 'HAIKU_BUILD_PROFILE = "development-raw" ;' > UserProfileConfig
+    "$__RootfsDir/tmp/buildtools/jam/jam0" -q '<build>package' '<repository>Haiku'
     popd
     # Setup the sysroot
     mkdir -p "$__RootfsDir/boot/system"
