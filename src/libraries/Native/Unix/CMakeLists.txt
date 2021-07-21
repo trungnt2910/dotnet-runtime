@@ -217,6 +217,7 @@ else ()
 endif ()
 
 if (CLR_CMAKE_TARGET_LINUX OR CLR_CMAKE_TARGET_HAIKU)
+   message(STATUS "src/libraries/Native/Unix/CMakeLists.txt: ${CMAKE_C_FLAGS}")
    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_GNU_SOURCE")
 endif ()
 

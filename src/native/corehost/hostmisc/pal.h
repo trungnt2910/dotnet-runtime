@@ -190,6 +190,11 @@ namespace pal
 #define SHARED_API extern "C"
 #endif
 
+// not particularly sure about this one
+#if defined(TARGET_HAIKU)
+#undef __cdecl
+#undef __stdcall
+#endif
 #define __cdecl    /* nothing */
 #define __stdcall  /* nothing */
 #if !defined(TARGET_FREEBSD)

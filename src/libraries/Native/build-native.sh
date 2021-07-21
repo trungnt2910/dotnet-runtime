@@ -68,7 +68,7 @@ elif [[ "$__TargetOS" == Android && -z "$ROOTFS_DIR" ]]; then
 elif [[ "$__TargetOS" == Haiku ]]; then
     # do we need to set __CrossBuild?
     __CrossBuild=1
-    echo "Set CrossBuild for Haiku"
+    echo "src/libraries/Native/build-native.sh: set __CrossBuild=1 for Haiku"
 else
     __CMakeArgs="-DFEATURE_DISTRO_AGNOSTIC_SSL=$__PortableBuild $__CMakeArgs"
     __CMakeArgs="-DCMAKE_STATIC_LIB_LINK=$__StaticLibLink $__CMakeArgs"
@@ -160,7 +160,7 @@ elif [[ "$__TargetOS" == tvOS ]]; then
         exit 1
     fi
 elif [[ "$__TargetOS" == Haiku ]]; then
-    echo "Adding CMAKE_SYSROOT for Haiku, located at $ROOTFS_DIR"
+    echo "src/libraries/Native/build-native.sh: adding CMAKE_SYSROOT for Haiku, located at $ROOTFS_DIR"
     __CMakeArgs="-DCMAKE_SYSROOT=$ROOTFS_DIR"
 fi
 
