@@ -9,6 +9,7 @@ macro(append_extra_system_libs NativeLibsExtra)
     elseif (CLR_CMAKE_TARGET_SUNOS)
         list(APPEND ${NativeLibsExtra} socket)
     elseif (CLR_CMAKE_TARGET_HAIKU)
+        message(STATUS "src/libraries/Native/Unix/System.Native/extra_libs.cmake: ${NativeLibsExtra}")
         list(APPEND ${NativeLibsExtra} network)
     endif ()
 

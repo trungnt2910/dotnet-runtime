@@ -28,7 +28,12 @@ if(NOT WIN32 AND NOT CLR_CMAKE_TARGET_BROWSER)
       return()
     endif()
 
+    if(CLR_CMAKE_TARGET_HAIKU)
+      set(SEARCH_PATH "${CROSS_ROOTFS}/generated/cross-tools-x86_64/bin")
+    endif()
+
     find_program(EXEC_LOCATION_${exec}
+      PATHS ${SEARCH_PATH}
       NAMES
       "${TOOLSET_PREFIX}${exec}${CLR_CMAKE_COMPILER_FILE_NAME_VERSION}"
       "${TOOLSET_PREFIX}${exec}")

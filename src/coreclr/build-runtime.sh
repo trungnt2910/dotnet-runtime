@@ -89,7 +89,7 @@ build_cross_architecture_components()
     else
         # not supported
         #return
-        echo "build_cross_architecture_components"
+        echo "src/coreclr/build-runtime.sh: build_cross_architecture_components"
     fi
 
     __CMakeBinDir="$crossArchBinDir"

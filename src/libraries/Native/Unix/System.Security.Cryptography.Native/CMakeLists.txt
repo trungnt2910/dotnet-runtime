@@ -90,6 +90,7 @@ if (GEN_SHARED_LIB)
         # on Linux, the build will succeed with undefined symbols, then the script reports them
         # and fails the build for us.
         if (NOT APPLE)
+            message(STATUS "src/libraries/Native/Unix/System.Security.Cryptography.Native: verify-so.sh doesn't work without munging library path")
             add_custom_command(TARGET System.Security.Cryptography.Native.OpenSsl POST_BUILD
                 COMMENT "Verifying System.Security.Cryptography.Native.OpenSsl.so dependencies"
                 COMMAND LD_LIBRARY_PATH=${CROSS_ROOTFS}/boot/system/lib

@@ -18,6 +18,9 @@ for line in $($nmCommand $1); do
       init) ;;
       fini) ;;
       etext) ;;
+      # _chk_fail & _stack_chk_fail are present in Haiku builds
+      _chk_fail) ;;
+      _stack_chk_fail) ;;
       PROCEDURE_LINKAGE_TABLE_) ;;
       *)    dllList+=(${BASH_REMATCH[1]});;
     esac

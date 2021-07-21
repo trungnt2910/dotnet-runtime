@@ -87,7 +87,7 @@ if (GEN_SHARED_LIB)
     if (NOT CLR_CMAKE_TARGET_MACCATALYST AND NOT CLR_CMAKE_TARGET_IOS AND NOT CLR_CMAKE_TARGET_TVOS AND NOT CLR_CMAKE_TARGET_ANDROID AND NOT CLR_CMAKE_TARGET_BROWSER)
         add_custom_command(TARGET System.Native POST_BUILD
             COMMENT "Verifying System.Native entry points against entrypoints.c "
-            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../verify-entrypoints.sh
+            COMMAND LD_LIBRARY_PATH=${CROSS_ROOTFS}/boot/system/lib ${CMAKE_CURRENT_SOURCE_DIR}/../verify-entrypoints.sh
                 $<TARGET_FILE:System.Native>
                 ${CMAKE_CURRENT_SOURCE_DIR}/entrypoints.c
                 ${CMAKE_NM}
