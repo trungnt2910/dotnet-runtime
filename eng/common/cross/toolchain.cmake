@@ -9,7 +9,11 @@ elseif(EXISTS ${CROSS_ROOTFS}/usr/platform/i86pc)
   set(ILLUMOS 1)
 elseif(EXISTS ${CROSS_ROOTFS}/boot/system/develop/headers/config/HaikuConfig.h)
   set(CMAKE_SYSTEM_NAME Haiku)
+<<<<<<< HEAD
   set(HAIKU 1)
+=======
+  message(STATUS "found haiku cross install")
+>>>>>>> f21e82b367d (haiku: fixes to toolchain config)
 else()
   set(CMAKE_SYSTEM_NAME Linux)
   set(LINUX 1)
@@ -90,7 +94,7 @@ elseif(TARGET_ARCH_NAME STREQUAL "x86")
   endif()
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Haiku")
   set(CMAKE_SYSTEM_PROCESSOR "x86_64")
-  set(triple "x86_64-unknown-haiku")
+  set(TOOLCHAIN "x86_64-unknown-haiku")
 else()
   message(FATAL_ERROR "Arch is ${TARGET_ARCH_NAME}. Only arm, arm64, armel, armv6, ppc64le, riscv64, s390x, x64 and x86 are supported!")
 endif()
@@ -147,6 +151,41 @@ elseif(FREEBSD)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fuse-ld=lld")
     set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -fuse-ld=lld")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Haiku")
+    set(CMAKE_SYSROOT "${CROSS_ROOTFS}")
+
+    set(TOOLSET_PREFIX ${TOOLCHAIN}-)
+    function(locate_toolchain_exec exec var)
+        string(TOUPPER ${exec} EXEC_UPPERCASE)
+        if(NOT "$ENV{CLR_${EXEC_UPPERCASE}}" STREQUAL "")
+            set(${var} "$ENV{CLR_${EXEC_UPPERCASE}}" PARENT_SCOPE)
+            return()
+        endif()
+
+        set(SEARCH_PATH "${CROSS_ROOTFS}/generated/cross-tools-x86_64/bin")
+
+        find_program(EXEC_LOCATION_${exec}
+            PATHS ${SEARCH_PATH}
+            NAMES
+            "${TOOLSET_PREFIX}${exec}${CLR_CMAKE_COMPILER_FILE_NAME_VERSION}"
+            "${TOOLSET_PREFIX}${exec}")
+
+        if (EXEC_LOCATION_${exec} STREQUAL "EXEC_LOCATION_${exec}-NOTFOUND")
+            message(FATAL_ERROR "Unable to find toolchain executable. Name: ${exec}, Prefix: ${TOOLSET_PREFIX}.")
+        endif()
+        set(${var} ${EXEC_LOCATION_${exec}} PARENT_SCOPE)
+    endfunction()
+
+    set(CMAKE_SYSTEM_PREFIX_PATH "${CROSS_ROOTFS}")
+
+    locate_toolchain_exec(gcc CMAKE_C_COMPILER)
+    locate_toolchain_exec(g++ CMAKE_CXX_COMPILER)
+
+    set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES} -lssp")
+    set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} -lssp")
+
+    # let CMake set up the correct search paths
+    include(Platform/Haiku)
 elseif(ILLUMOS)
     set(CMAKE_SYSROOT "${CROSS_ROOTFS}")
 
@@ -269,7 +308,8 @@ elseif(ILLUMOS)
   add_toolchain_linker_flag("-L${CROSS_ROOTFS}/lib/amd64")
   add_toolchain_linker_flag("-L${CROSS_ROOTFS}/usr/amd64/lib")
 elseif(HAIKU)
-  add_toolchain_linker_flag("-lnetwork -lroot")
+  message(WARNING "eng/common/cross/toolchain.cmake: disabled linker flags, add back if necessary")
+  add_toolchain_linker_flag("-lnetwork")
 endif()
 
 # Specify compile options
@@ -302,6 +342,7 @@ elseif(TARGET_ARCH_NAME STREQUAL "x86")
 elseif(HAIKU)
   add_compile_options(-fPIC)
   add_definitions(-D_GNU_SOURCE)
+  add_definitions(-D_BSD_SOURCE)
 endif()
 
 if(TIZEN)
