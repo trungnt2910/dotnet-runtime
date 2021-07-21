@@ -8,7 +8,6 @@ elseif(EXISTS ${CROSS_ROOTFS}/usr/platform/i86pc)
   set(ILLUMOS 1)
 elseif(EXISTS ${CROSS_ROOTFS}/boot/system/develop/headers/config/HaikuConfig.h)
   set(CMAKE_SYSTEM_NAME Haiku)
-  set(HAIKU 1)
   message(STATUS "found haiku cross install")
 else()
   set(CMAKE_SYSTEM_NAME Linux)
@@ -54,7 +53,7 @@ elseif (ILLUMOS)
   set(TOOLCHAIN "x86_64-illumos")
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Haiku")
   set(CMAKE_SYSTEM_PROCESSOR "x86_64")
-  set(triple "x86_64-unknown-haiku")
+  set(TOOLCHAIN "x86_64-unknown-haiku")
 else()
   message(FATAL_ERROR "Arch is ${TARGET_ARCH_NAME}. Only armel, arm, arm64, s390x and x86 are supported!")
 endif()
@@ -98,6 +97,41 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
     set(CMAKE_CXX_COMPILER_TARGET ${triple})
     set(CMAKE_ASM_COMPILER_TARGET ${triple})
     set(CMAKE_SYSROOT "${CROSS_ROOTFS}")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Haiku")
+    set(CMAKE_SYSROOT "${CROSS_ROOTFS}")
+
+    set(TOOLSET_PREFIX ${TOOLCHAIN}-)
+    function(locate_toolchain_exec exec var)
+        string(TOUPPER ${exec} EXEC_UPPERCASE)
+        if(NOT "$ENV{CLR_${EXEC_UPPERCASE}}" STREQUAL "")
+            set(${var} "$ENV{CLR_${EXEC_UPPERCASE}}" PARENT_SCOPE)
+            return()
+        endif()
+
+        set(SEARCH_PATH "${CROSS_ROOTFS}/generated/cross-tools-x86_64/bin")
+
+        find_program(EXEC_LOCATION_${exec}
+            PATHS ${SEARCH_PATH}
+            NAMES
+            "${TOOLSET_PREFIX}${exec}${CLR_CMAKE_COMPILER_FILE_NAME_VERSION}"
+            "${TOOLSET_PREFIX}${exec}")
+
+        if (EXEC_LOCATION_${exec} STREQUAL "EXEC_LOCATION_${exec}-NOTFOUND")
+            message(FATAL_ERROR "Unable to find toolchain executable. Name: ${exec}, Prefix: ${TOOLSET_PREFIX}.")
+        endif()
+        set(${var} ${EXEC_LOCATION_${exec}} PARENT_SCOPE)
+    endfunction()
+
+    set(CMAKE_SYSTEM_PREFIX_PATH "${CROSS_ROOTFS}")
+
+    locate_toolchain_exec(gcc CMAKE_C_COMPILER)
+    locate_toolchain_exec(g++ CMAKE_CXX_COMPILER)
+
+    set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES} -lssp")
+    set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} -lssp")
+
+    # let CMake set up the correct search paths
+    include(Platform/Haiku)
 elseif(ILLUMOS)
     set(CMAKE_SYSROOT "${CROSS_ROOTFS}")
 
@@ -129,19 +163,7 @@ elseif(ILLUMOS)
 
     set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES} -lssp")
     set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} -lssp")
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Haiku")
-    # we cross-compile by instructing clang
-    set(CMAKE_C_COMPILER_TARGET ${triple})
-    set(CMAKE_CXX_COMPILER_TARGET ${triple})
-    set(CMAKE_ASM_COMPILER_TARGET ${triple})
-    set(CMAKE_SYSROOT "${CROSS_ROOTFS}")
-    include_directories(SYSTEM ${CROSS_ROOTFS}/boot/system/develop/headers)
-    set(CMAKE_SYSTEM_PREFIX_PATH "${CROSS_ROOTFS}")
-    # a temporary work-around, until can figure out why cmake isn't searching these locations
-    set(CLR_CMAKE_TARGET_HAIKU_INCLUDES "${CROSS_ROOTFS}/boot/system/develop/headers")
-    set(CLR_CMAKE_TARGET_HAIKU_LIBRARIES "${CROSS_ROOTFS}/boot/system/develop/lib")
-    # we could potentially add -lnetwork here
-    else()
+else()
     set(CMAKE_SYSROOT "${CROSS_ROOTFS}")
 
     set(CMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN "${CROSS_ROOTFS}/usr")
@@ -190,12 +212,13 @@ elseif(ILLUMOS)
   add_toolchain_linker_flag("-L${CROSS_ROOTFS}/lib/amd64")
   add_toolchain_linker_flag("-L${CROSS_ROOTFS}/usr/amd64/lib")
 elseif(HAIKU)
-  add_toolchain_linker_flag("-lnetwork -lroot")
+  message(WARNING "eng/common/cross/toolchain.cmake: disabled linker flags, add back if necessary")
+  add_toolchain_linker_flag("-lnetwork")
 endif()
 
 # Specify compile options
 
-if((TARGET_ARCH_NAME MATCHES "^(arm|armel|arm64|s390x)$" AND NOT "$ENV{__DistroRid}" MATCHES "android.*") OR ILLUMOS)
+if((TARGET_ARCH_NAME MATCHES "^(arm|armel|arm64|s390x)$" AND NOT "$ENV{__DistroRid}" MATCHES "android.*") OR ILLUMOS OR HAIKU)
   set(CMAKE_C_COMPILER_TARGET ${TOOLCHAIN})
   set(CMAKE_CXX_COMPILER_TARGET ${TOOLCHAIN})
   set(CMAKE_ASM_COMPILER_TARGET ${TOOLCHAIN})
@@ -223,6 +246,7 @@ elseif(TARGET_ARCH_NAME STREQUAL "x86")
 elseif(HAIKU)
   add_compile_options(-fPIC)
   add_definitions(-D_GNU_SOURCE)
+  add_definitions(-D_BSD_SOURCE)
 endif()
 
 if(DEFINED TIZEN_TOOLCHAIN)
