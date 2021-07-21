@@ -58,6 +58,11 @@ extern "C" {
 
 #else   // !defined(__i386__)
 
+#if defined(__HAIKU__)
+#undef __stdcall
+#undef __cdecl
+#endif
+
 #define __stdcall
 #define _stdcall
 #define __cdecl

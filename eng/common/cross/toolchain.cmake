@@ -212,7 +212,6 @@ elseif(ILLUMOS)
   add_toolchain_linker_flag("-L${CROSS_ROOTFS}/lib/amd64")
   add_toolchain_linker_flag("-L${CROSS_ROOTFS}/usr/amd64/lib")
 elseif(HAIKU)
-  message(WARNING "eng/common/cross/toolchain.cmake: disabled linker flags, add back if necessary")
   add_toolchain_linker_flag("-lnetwork")
 endif()
 
