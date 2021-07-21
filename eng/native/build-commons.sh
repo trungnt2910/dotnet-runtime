@@ -98,7 +98,6 @@ build_native()
         generator="ninja"
         buildTool="$(command -v ninja || command -v ninja-build)"
     else
-        echo "Using make"
         buildTool="make"
     fi
 
@@ -206,8 +205,6 @@ EOF
             # For non-wasm Unix scenarios, we may have to use an old version of CMake that doesn't support
             # multiple targets. Instead, directly invoke the build tool to build multiple targets in one invocation.
             pushd "$intermediatesDir"
-
-            echo "native/build-commons.sh in $(pwd)"
 
             echo "Executing $buildTool $target -j $__NumProc"
             "$buildTool" $target -j "$__NumProc"
