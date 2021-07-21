@@ -26,6 +26,7 @@
 #include "pal_string.h"
 #include "pal_sysctl.h"
 #include "pal_tcpstate.h"
+#include "pal_teaminfo.h"
 #include "pal_threading.h"
 #include "pal_time.h"
 #include "pal_uid.h"
