@@ -2253,8 +2253,11 @@ find_proc_info(unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pip, int nee
         case PT_DYNAMIC:
             dynamicAddr = reinterpret_cast<Dyn*>(loadbias + ph.p_vaddr);
             break;
-
+#if defined(__HAIKU__)
+        case PT_EH_FRAME:
+#else
         case PT_GNU_EH_FRAME:
+#endif
             ehFrameHdrAddr = loadbias + ph.p_vaddr;
             ehFrameHdrLen = ph.p_memsz;
             break;
