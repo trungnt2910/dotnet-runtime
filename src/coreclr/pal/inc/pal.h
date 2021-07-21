@@ -2655,6 +2655,8 @@ PALIMPORT BOOL PALAPI PAL_GetUnwindInfoSize(SIZE_T baseAddress, ULONG64 ehFrameH
 #define PAL_CS_NATIVE_DATA_SIZE 96
 #elif defined(__linux__) && defined(_riscv) && __riscv_xlen == 64
 #define PAL_CS_NATIVE_DATA_SIZE 96
+#elif defined(__HAIKU__) && defined(__x86_64__)
+#define PAL_CS_NATIVE_DATA_SIZE 56
 #else
 #error  PAL_CS_NATIVE_DATA_SIZE is not defined for this architecture
 #endif

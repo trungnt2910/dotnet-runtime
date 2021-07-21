@@ -24,7 +24,9 @@ Abstract:
 #include "cs.hpp"
 
 #include <pthread.h>
+#if !defined(__HAIKU__)
 #include <sys/syscall.h>
+#endif
 #if HAVE_MACH_EXCEPTIONS
 #include <mach/mach.h>
 #endif // HAVE_MACH_EXCEPTIONS
