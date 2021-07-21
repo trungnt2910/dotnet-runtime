@@ -40,8 +40,9 @@ function(set_common_libs TargetType)
         if((CLR_CMAKE_TARGET_LINUX OR CLR_CMAKE_TARGET_FREEBSD) AND NOT CLR_CMAKE_TARGET_ANDROID)
             target_link_libraries (${DOTNET_PROJECT_NAME} "pthread")
         endif()
-
-        target_link_libraries (${DOTNET_PROJECT_NAME} ${CMAKE_DL_LIBS})
+        if (NOT CLR_CMAKE_TARGET_HAIKU)
+            target_link_libraries (${DOTNET_PROJECT_NAME} ${CMAKE_DL_LIBS})
+        endif()
     endif()
 
     if (NOT ${TargetType} STREQUAL "lib-static")

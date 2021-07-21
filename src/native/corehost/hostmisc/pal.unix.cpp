@@ -137,6 +137,9 @@ bool pal::getcwd(pal::string_t* recv)
     return true;
 }
 
+#if defined(TARGET_HAIKU)
+#define RTLD_NOLOAD 0
+#endif
 namespace
 {
     bool get_loaded_library_from_proc_maps(const pal::char_t* library_name, pal::dll_t* dll, pal::string_t* path)
