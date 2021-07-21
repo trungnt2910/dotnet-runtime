@@ -29,6 +29,7 @@ set(NATIVE_SOURCES
     pal_runtimeinformation.c
     pal_signal.c
     pal_string.c
+#    pal_teaminfo.c
     pal_tcpstate.c
     pal_threading.c
     pal_time.c
