@@ -373,6 +373,7 @@ elif [[ "$__CodeName" == "haiku" ]]; then
     git fetch origin refs/changes/18/4218/2 && git cherry-pick FETCH_HEAD
     ## add development build profile (slimmer than nightly)
     git fetch origin refs/changes/64/4164/1 && git cherry-pick FETCH_HEAD
+    ## add the patch for providing an explicit sysroot
 
     # Build jam
     echo 'Building jam buildtool'
@@ -383,7 +384,7 @@ elif [[ "$__CodeName" == "haiku" ]]; then
     echo "Building cross tools with $JOBS parallel jobs"
     mkdir -p "$__RootfsDir/generated"
     cd "$__RootfsDir/generated"
-    "$__RootfsDir/tmp/haiku/configure" -j"$JOBS" --cross-tools-source "$__RootfsDir/tmp/buildtools" --build-cross-tools x86_64
+    "$__RootfsDir/tmp/haiku/configure" -j"$JOBS" --sysroot "$__RootfsDir" --cross-tools-source "$__RootfsDir/tmp/buildtools" --build-cross-tools x86_64
 
     # Build haiku packages
     echo 'Building Haiku packages and package tool'
@@ -399,7 +400,8 @@ elif [[ "$__CodeName" == "haiku" ]]; then
     for file in "$__RootfsDir/generated/download/"*.hpkg; do
         "$__RootfsDir/generated/objects/linux/x86_64/release/tools/package/package" extract -C "$__RootfsDir/boot/system" "$file"
     done
-    echo 'Finished generating Haiku x86_64 sysroot'
+
+    # And done!
     popd
 elif [[ -n $__CodeName ]]; then
     qemu-debootstrap --arch $__UbuntuArch $__CodeName $__RootfsDir $__UbuntuRepo
