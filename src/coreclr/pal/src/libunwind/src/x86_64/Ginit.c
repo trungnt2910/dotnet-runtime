@@ -34,7 +34,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#if !defined(__HAIKU__)
 #include <sys/syscall.h>
+#endif
 #include <stdatomic.h>
 
 #include "unwind_i.h"
@@ -138,8 +140,13 @@ write_validate (void *addr)
 
   do
     {
+      #if defined(__HAIKU__)
+      // Haiku does not have a stable syscall interface
+      write(mem_validate_pipe[1], addr, 1);
+      #else
       /* use syscall insteadof write() so that ASAN does not complain */
       ret = syscall (SYS_write, mem_validate_pipe[1], addr, 1);
+      #endif
     }
   while ( errno == EINTR );
 
