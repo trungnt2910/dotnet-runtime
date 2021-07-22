@@ -6,8 +6,9 @@ include_directories(${PALTESTSUITE_SOURCE_DIR}/common)
 
 # All test will link against these libraries:
 # pthread and m are part of the Android C library (bionic),
+# and is also the same for Haiku,
 # so we don't need to link them seperately
-if(NOT CLR_CMAKE_TARGET_ANDROID)
+if(NOT CLR_CMAKE_TARGET_ANDROID AND NOT CLR_CMAKE_TARGET_HAIKU)
   list(APPEND COMMON_TEST_LIBRARIES pthread)
   list(APPEND COMMON_TEST_LIBRARIES m)
 endif()
