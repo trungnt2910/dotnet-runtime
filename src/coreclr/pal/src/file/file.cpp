@@ -32,7 +32,9 @@ SET_DEFAULT_DEBUG_CHANNEL(FILE); // some headers have code with asserts, so do t
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/param.h>
+#ifndef __HAIKU__
 #include <sys/mount.h>
+#endif
 #include <errno.h>
 #include <limits.h>
 

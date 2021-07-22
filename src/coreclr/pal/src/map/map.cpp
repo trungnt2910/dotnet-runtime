@@ -2145,6 +2145,10 @@ void * MAPMapPEFile(HANDLE hFile, off_t offset)
 #endif
     SIZE_T reserveSize = 0;
     bool forceOveralign = false;
+#ifdef __HAIKU__
+// haiku: is the lack of MAP_FILE an issue?
+#define MAP_FILE 0
+#endif
     int readWriteFlags = MAP_FILE|MAP_PRIVATE|MAP_FIXED;
     int readOnlyFlags = readWriteFlags;
 
