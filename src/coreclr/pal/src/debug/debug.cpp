@@ -44,6 +44,8 @@ SET_DEFAULT_DEBUG_CHANNEL(DEBUG); // some headers have code with asserts, so do 
 #include <unistd.h>
 #elif HAVE_TTRACE // HAVE_PROCFS_CTL
 #include <sys/ttrace.h>
+#elif defined(__HAIKU__)
+// haiku: need to add debugger support
 #else // HAVE_TTRACE
 #include <sys/ptrace.h>
 #endif  // HAVE_PROCFS_CTL
@@ -578,6 +580,7 @@ PAL_OpenProcessMemory(
     }
     *pHandle = port;
 #else
+// haiku: PAL_OpenProcessMemory: Haiku doesn't have procfs
     char memPath[128];
     _snprintf_s(memPath, sizeof(memPath), sizeof(memPath), "/proc/%lu/mem", processId);
 
