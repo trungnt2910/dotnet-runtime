@@ -43,7 +43,9 @@ SET_DEFAULT_DEBUG_CHANNEL(EXCEPT); // some headers have code with asserts, so do
 #include "pal/utils.h"
 
 #include <string.h>
+#ifndef __HAIKU__
 #include <sys/ucontext.h>
+#endif
 #include <sys/utsname.h>
 #include <unistd.h>
 #include <sys/mman.h>
