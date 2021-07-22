@@ -42,11 +42,14 @@ bool VMToOSInterface::CreateDoubleMemoryMapper(void** pHandle, size_t *pMaxExecu
 {
 #ifndef TARGET_OSX
 
-#ifdef TARGET_FREEBSD
+#if defined(TARGET_FREEBSD)
     int fd = shm_open(SHM_ANON, O_RDWR | O_CREAT, S_IRWXU);
-#else // TARGET_FREEBSD
+#elif defined(TARGET_HAIKU)
+    // haiku: this is likely broken, we don't (yet) have SHM_ANON
+    int fd = shm_open((char*)1, O_RDWR | O_CREAT, S_IRWXU);
+#else // TARGET_FREEBSD / TARGET_HAIKU
     int fd = memfd_create("doublemapper", MFD_CLOEXEC);
-#endif // TARGET_FREEBSD
+#endif // TARGET_FREEBSD / TARGET_HAIKU
 
     if (fd == -1)
     {
