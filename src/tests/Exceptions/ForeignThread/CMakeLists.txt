@@ -9,7 +9,7 @@ endif(CLR_CMAKE_HOST_OSX)
 
 set(SOURCES ForeignThreadExceptionsNative.cpp)
 
-if(NOT CLR_CMAKE_HOST_WIN32)
+if(NOT CLR_CMAKE_HOST_WIN32 AND NOT CLR_CMAKE_HOST_HAIKU)
     add_compile_options(-pthread)
 endif()
 
