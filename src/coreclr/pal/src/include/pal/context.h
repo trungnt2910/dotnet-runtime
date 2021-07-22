@@ -620,6 +620,44 @@ inline void *FPREG_Xstate_Ymmh(const ucontext_t *uc)
     return reinterpret_cast<void *>(&((_STRUCT_X86_AVX_STATE64&)FPSTATE(uc)).__fpu_ymmh0);
 }
 
+#elif defined(TARGET_HAIKU)
+
+#define MCREG_Rbp(mc)	    ((mc).rbp)
+#define MCREG_Rip(mc)	    ((mc).rip)
+#define MCREG_Rsp(mc)	    ((mc).rsp)
+#define MCREG_Rsi(mc)       ((mc).rsi)
+#define MCREG_Rdi(mc)	    ((mc).rdi)
+#define MCREG_Rbx(mc)	    ((mc).rbx)
+#define MCREG_Rdx(mc)	    ((mc).rdx)
+#define MCREG_Rcx(mc)	    ((mc).rcx)
+#define MCREG_Rax(mc)	    ((mc).rax)
+#define MCREG_R8(mc)	    ((mc).r8)
+#define MCREG_R9(mc)	    ((mc).r9)
+#define MCREG_R10(mc)	    ((mc).r10)
+#define MCREG_R11(mc)	    ((mc).r11)
+#define MCREG_R12(mc)	    ((mc).r12)
+#define MCREG_R13(mc)	    ((mc).r13)
+#define MCREG_R14(mc)	    ((mc).r14)
+#define MCREG_R15(mc)	    ((mc).r15)
+#define MCREG_EFlags(mc)    ((mc).rflags)
+// haiku: missing SegCs
+#define MCREG_SegCs(mc)     ((mc).cs)
+
+#define FPSTATE(uc)             ((uc)->uc_mcontext.fpu)
+#define FPREG_ControlWord(uc)   FPSTATE(uc).fp_fxsave.control
+#define FPREG_StatusWord(uc)    FPSTATE(uc).fp_fxsave.status
+#define FPREG_TagWord(uc)       FPSTATE(uc).fp_fxsave.tag
+#define FPREG_MxCsr(uc)         FPSTATE(uc).fp_fxsave.mxcsr
+#define FPREG_MxCsr_Mask(uc)    FPSTATE(uc).fp_fxsave.mscsr_mask
+#define FPREG_ErrorOffset(uc)   *(DWORD*) &(FPSTATE(uc).fp_fxsave.rip)
+#define FPREG_ErrorSelector(uc) *((WORD*) &(FPSTATE(uc).fp_fxsave.rip) + 2)
+#define FPREG_DataOffset(uc)    *(DWORD*) &(FPSTATE(uc).fp_fxsave.rdp)
+#define FPREG_DataSelector(uc)  *((WORD*) &(FPSTATE(uc).fp_fxsave.rdp) + 2)
+
+#define FPREG_Xmm(uc, index)    *(M128A*) &(FPSTATE(uc).fp_fxsave.xmm[index])
+// haiku: not sure about FPREG_St
+#define FPREG_St(uc, index)     *(M128A*) &(FPSTATE(uc).fp_fxsave.fp[index].value)
+
 #else //TARGET_OSX
 
     // For FreeBSD, as found in x86/ucontext.h
