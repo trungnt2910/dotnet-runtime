@@ -96,7 +96,6 @@ namespace System
                         case PlatformID.Xbox: os = "Xbox "; break;
                         case PlatformID.MacOSX: os = "Mac OS X "; break;
                         case PlatformID.Other: os = "Other "; break;
-                        case PlatformID.Haiku: os = "Haiku "; break;
                         default:
                             Debug.Fail($"Unknown platform {_platform}");
                             os = "<unknown> "; break;
