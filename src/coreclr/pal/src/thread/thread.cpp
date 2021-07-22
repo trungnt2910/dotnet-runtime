@@ -1451,6 +1451,15 @@ CorUnix::GetThreadTimesInternal(
     close(fd);
 
     ts = status.pr_utime;
+#elif defined(__HAIKU__)
+    struct timespec ts;
+    if (clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts) != 0)
+    {
+        ASSERT("clock_gettime() failed; errno is %d (%s)\n", errno, strerror(errno));
+        SetLastError(ERROR_INTERNAL_ERROR);
+        pTargetThread->Unlock(pThread);
+        goto SetTimesToZero;
+    }
 #else // HAVE_PTHREAD_GETCPUCLOCKID
 #error "Don't know how to obtain user cpu time on this platform."
 #endif // HAVE_PTHREAD_GETCPUCLOCKID
