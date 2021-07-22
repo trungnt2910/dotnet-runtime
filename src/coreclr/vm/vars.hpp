@@ -46,13 +46,14 @@ typedef int                 ptrdiff_t;
 #endif
 
 
-#ifndef _SIZE_T_DEFINED
+#if !defined(_SIZE_T_DEFINED) || !defined(__size_t__)
 #ifdef  HOST_64BIT
 typedef unsigned __int64 size_t;
 #else
 typedef unsigned int     size_t;
 #endif
 #define _SIZE_T_DEFINED
+#define __size_t__
 #endif
 
 

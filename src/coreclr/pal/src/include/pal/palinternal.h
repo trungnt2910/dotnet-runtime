@@ -555,6 +555,9 @@ function_name() to call the system's implementation
 #undef CHAR_BIT
 #endif
 
+#undef _SIZE_T_DEFINED
+#undef __size_t__
+
 // We need a sigsetjmp prototype in pal.h for the SEH macros, but we
 // can't use the "real" prototype (because we don't want to define sigjmp_buf).
 // So we must rename the "real" sigsetjmp to avoid redefinition errors.
@@ -563,8 +566,6 @@ function_name() to call the system's implementation
 #include <setjmp.h>
 #undef sigsetjmp
 #undef siglongjmp
-
-#undef _SIZE_T_DEFINED
 
 #define _DONT_USE_CTYPE_INLINE_
 #if HAVE_RUNETYPE_H
