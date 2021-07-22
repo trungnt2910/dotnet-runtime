@@ -28,6 +28,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#if !defined(__HAIKU__)
+#include <sys/syscall.h>
+#endif
 #include <stdatomic.h>
 
 #include "unwind_i.h"
