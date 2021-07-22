@@ -44,7 +44,7 @@ add_library(Profiler SHARED ${SOURCES})
 
 if(WIN32)
 	set(DEPENDENCIES Advapi32.lib oleaut32.lib Ole32.lib)
-else(WIN32)
+elseif(NOT HAIKU)
     set(DEPENDENCIES pthread dl)
 endif(WIN32)
 

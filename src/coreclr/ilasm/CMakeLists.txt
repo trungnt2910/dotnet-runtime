@@ -107,15 +107,23 @@ else()
 endif(CLR_CMAKE_TARGET_WIN32)
 
 
-if(CLR_CMAKE_HOST_UNIX)
-  target_link_libraries(ilasm
-    ${ILASM_LINK_LIBRARIES}
-    utilcodestaticnohost
-    mscorrc
-    coreclrpal
-    palrt
-    ${CMAKE_DL_LIBS}
-  )
+if(CLR_CMAKE_HOST_UNIX AND NOT CLR_CMAKE_TARGET_HAIKU)
+    target_link_libraries(ilasm
+        ${ILASM_LINK_LIBRARIES}
+        utilcodestaticnohost
+        mscorrc
+        coreclrpal
+        palrt
+        ${CMAKE_DL_LIBS}
+    )
+elseif(CLR_CMAKE_TARGET_HAIKU)
+    target_link_libraries(ilasm
+        ${ILASM_LINK_LIBRARIES}
+        utilcodestaticnohost
+        mscorrc
+        coreclrpal
+        palrt
+    )
 else()
   target_link_libraries(ilasm
     ${ILASM_LINK_LIBRARIES}
@@ -123,6 +131,6 @@ else()
     oleaut32
     shell32
   )
-endif(CLR_CMAKE_HOST_UNIX)
+endif()
 
 install_clr(TARGETS ilasm DESTINATIONS . COMPONENT iltools)

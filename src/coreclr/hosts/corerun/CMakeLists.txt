@@ -27,12 +27,14 @@ if(CLR_CMAKE_HOST_WIN32)
         ${STATIC_MT_VCRT_LIB}
     )
 else(CLR_CMAKE_HOST_WIN32)
-    target_link_libraries(corerun ${CMAKE_DL_LIBS})
+    if (NOT CLR_CMAKE_TARGET_HAIKU)
+        target_link_libraries(corerun ${CMAKE_DL_LIBS})
+    endif()
     # Required to expose symbols for global symbol discovery
     target_link_libraries(corerun -rdynamic)
 
     # Android implements pthread natively
-    if(NOT CLR_CMAKE_TARGET_ANDROID)
+    if(NOT CLR_CMAKE_TARGET_ANDROID AND NOT CLR_CMAKE_TARGET_HAIKU)
         target_link_libraries(corerun pthread)
     endif()
 endif(CLR_CMAKE_HOST_WIN32)

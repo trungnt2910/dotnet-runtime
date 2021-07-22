@@ -51,7 +51,9 @@ check_include_files("sys/auxv.h;asm/hwcap.h" HAVE_AUXV_HWCAP_H)
 check_include_files("sys/ptrace.h" HAVE_SYS_PTRACE_H)
 check_symbol_exists(getauxval sys/auxv.h HAVE_GETAUXVAL)
 
-set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_DL_LIBS})
+if (NOT CLR_CMAKE_TARGET_HAIKU)
+  set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_DL_LIBS})
+endif()
 
 check_cxx_source_compiles("
 #include <sys/mman.h>
@@ -84,8 +86,10 @@ check_function_exists(kqueue HAVE_KQUEUE)
 
 check_library_exists(c sched_getaffinity "" HAVE_SCHED_GETAFFINITY)
 check_library_exists(c sched_setaffinity "" HAVE_SCHED_SETAFFINITY)
-check_library_exists(pthread pthread_create "" HAVE_LIBPTHREAD)
-check_library_exists(c pthread_create "" HAVE_PTHREAD_IN_LIBC)
+if (NOT CLR_CMAKE_TARGET_HAIKU)
+  check_library_exists(pthread pthread_create "" HAVE_LIBPTHREAD)
+  check_library_exists(c pthread_create "" HAVE_PTHREAD_IN_LIBC)
+endif()
 
 if (HAVE_LIBPTHREAD)
   set(PTHREAD_LIBRARY pthread)
