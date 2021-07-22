@@ -14,7 +14,6 @@ namespace System
         Unix = 4,
         [EditorBrowsable(EditorBrowsableState.Never)] Xbox = 5,
         [EditorBrowsable(EditorBrowsableState.Never)] MacOSX = 6,
-        Other = 7,
-        Haiku = 8
+        Other = 7
     }
 }
