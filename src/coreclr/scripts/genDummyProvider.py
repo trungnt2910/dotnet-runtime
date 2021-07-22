@@ -121,8 +121,6 @@ def generateDummyFiles(etwmanifest, out_dirname, runtimeFlavor, extern, dryRun):
 
                 impl.write("""
 #ifdef TARGET_UNIX
-#include "pal_mstypes.h"
-#include "pal_error.h"
 #include "pal.h"
 #define PAL_free free
 #define PAL_realloc realloc
