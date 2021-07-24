@@ -132,6 +132,17 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Haiku")
 
     # let CMake set up the correct search paths
     include(Platform/Haiku)
+
+    # also include the private headers
+    include_directories(SYSTEM
+        "${CROSS_ROOTFS}/boot/system/develop/headers/private/runtime_loader"
+        "${CROSS_ROOTFS}/boot/system/develop/headers/private/system")
+    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+        include_directories(SYSTEM
+          "${CROSS_ROOTFS}/boot/system/develop/headers/private/system/arch/x86_64")
+    else()
+      message(FATAL "Add Haiku arch headers for ${CMAKE_SYSTEM_PROCESSOR}")
+    endif()
 elseif(ILLUMOS)
     set(CMAKE_SYSROOT "${CROSS_ROOTFS}")
 
