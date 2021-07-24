@@ -56,7 +56,7 @@ _Ux86_64_setcontext:
 1:
 #elif defined __HAIKU__
 	# just mirroring getcontext.S
-	fxsave UC_MCONTEXT_FPSTATE(%rdi)
+	fxrstor UC_MCONTEXT_FPSTATE(%rdi)
 #else
 #error Port me
 #endif

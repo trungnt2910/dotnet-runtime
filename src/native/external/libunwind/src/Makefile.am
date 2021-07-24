@@ -155,6 +155,8 @@ libunwind_la_SOURCES_os_hpux = os-hpux.c
 
 libunwind_la_SOURCES_os_freebsd = os-freebsd.c
 
+libunwind_la_SOURCES_os_haiku = os-haiku.c
+
 libunwind_la_SOURCES_os_qnx = os-qnx.c
 
 libunwind_la_SOURCES_os_solaris = os-solaris.c
@@ -594,6 +596,15 @@ if OS_FREEBSD
  libunwind_coredump_la_SOURCES += coredump/_UCD_get_mapinfo_generic.c
 endif
 
+if OS_HAIKU
+ libunwind_la_SOURCES_os              = $(libunwind_la_SOURCES_os_haiku)
+ libunwind_la_SOURCES_os_local        = $(libunwind_la_SOURCES_os_haiku_local)
+ libunwind_x86_la_SOURCES_os          = x86/getcontext-haiku.S
+ libunwind_la_SOURCES_x86_os_local    = x86/Los-haiku.c
+ libunwind_la_SOURCES_x86_64_os       = x86_64/Gos-haiku.c
+ libunwind_la_SOURCES_x86_64_os_local = x86_64/Los-haiku.c
+#endif
+
 if OS_SOLARIS
  libunwind_la_SOURCES_os              = $(libunwind_la_SOURCES_os_solaris)
  libunwind_la_SOURCES_x86_64_os       = x86_64/Gos-solaris.c
@@ -827,6 +838,7 @@ EXTRA_DIST =	$(libunwind_la_SOURCES_aarch64)			\
 		$(libunwind_la_SOURCES_sh)			\
 		$(libunwind_la_SOURCES_x86)			\
 		$(libunwind_la_SOURCES_os_freebsd)		\
+                $(libunwind_la_SOURCES_os_haiku)                \
 		$(libunwind_la_SOURCES_os_linux)		\
 		$(libunwind_la_SOURCES_os_hpux)			\
 		$(libunwind_la_SOURCES_os_qnx)			\
