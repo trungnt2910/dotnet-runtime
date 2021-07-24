@@ -58,6 +58,14 @@ SET(libunwind_la_SOURCES_os_freebsd_local
 # Nothing
 )
 
+SET(libunwind_la_SOURCES_os_haiku
+    os-haiku.c
+)
+
+SET(libunwind_la_SOURCES_os_haiku_local
+# Nothing
+)
+
 SET(libunwind_la_SOURCES_os_solaris
     os-solaris.c
 )
@@ -88,6 +96,14 @@ elseif(CLR_CMAKE_TARGET_FREEBSD)
     SET(libunwind_la_SOURCES_arm_os             arm/Gos-freebsd.c)
     SET(libunwind_la_SOURCES_arm_os_local       arm/Los-freebsd.c)
     list(APPEND libunwind_coredump_la_SOURCES   coredump/_UCD_access_reg_freebsd.c)
+elseif(CLR_CMAKE_TARGET_HAIKU)
+    SET(libunwind_la_SOURCES_os                 ${libunwind_la_SOURCES_os_haiku})
+    SET(libunwind_la_SOURCES_os_local           ${libunwind_la_SOURCES_os_haiku_local})
+    SET(libunwind_la_SOURCES_x86_os             x86/Gos-haiku.c)
+    SET(libunwind_x86_la_SOURCES_os             x86/getcontext-haiku.S)
+    SET(libunwind_la_SOURCES_x86_os_local       x86/Los-haiku.c)
+    SET(libunwind_la_SOURCES_x86_64_os          x86_64/Gos-haiku.c)
+    SET(libunwind_la_SOURCES_x86_64_os_local    x86_64/Los-haiku.c)
 elseif(CLR_CMAKE_HOST_SUNOS)
     SET(libunwind_la_SOURCES_os                 ${libunwind_la_SOURCES_os_solaris})
     SET(libunwind_la_SOURCES_os_local           ${libunwind_la_SOURCES_os_solaris_local})
