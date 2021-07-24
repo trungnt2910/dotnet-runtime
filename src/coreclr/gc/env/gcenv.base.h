@@ -20,6 +20,9 @@
 #endif //_MSC_VER
 
 #ifndef _MSC_VER
+#ifdef __HAIKU__
+#undef __stdcall
+#endif
 #define __stdcall
 #ifdef __GNUC__
 #define __forceinline __attribute__((always_inline)) inline
