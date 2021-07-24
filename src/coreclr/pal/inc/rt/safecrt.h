@@ -132,13 +132,25 @@ typedef int errno_t; /* standard */
 #if !defined(_SECURECRT_ERRCODE_VALUES_DEFINED)
 #define _SECURECRT_ERRCODE_VALUES_DEFINED
 #if !defined(EINVAL)
+#ifndef __HAIKU__
 #define EINVAL          22
+#else
+#define EINVAL ((int)0x80000005)
+#endif
 #endif
 #if !defined(ERANGE)
+#if !defined(__HAIKU__)
 #define ERANGE          34
+#else
+#define ERANGE ((int)0x80007011)
+#endif
 #endif
 #if !defined(EILSEQ)
+#ifndef __HAIKU__
 #define EILSEQ          42
+#else
+#define EILSEQ ((int)0x800070026)
+#endif
 #endif
 #if !defined(STRUNCATE)
 #define STRUNCATE       80
