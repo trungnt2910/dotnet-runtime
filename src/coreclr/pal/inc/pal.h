@@ -4492,11 +4492,13 @@ PALIMPORT DLLEXPORT int * __cdecl PAL_errno(int caller);
 PALIMPORT DLLEXPORT char * __cdecl getenv(const char *);
 PALIMPORT DLLEXPORT int __cdecl _putenv(const char *);
 
-// I don't understand this one
-#ifdef __HAIKU__
-#undef ERANGE
-#endif
+#ifndef PAL_STDCPP_COMPAT
+#ifndef __HAIKU__
 #define ERANGE          34
+#else
+#define ERANGE ((int)0x80007011)
+#endif
+#endif
 
 PALIMPORT WCHAR __cdecl PAL_ToUpperInvariant(WCHAR);
 PALIMPORT WCHAR __cdecl PAL_ToLowerInvariant(WCHAR);

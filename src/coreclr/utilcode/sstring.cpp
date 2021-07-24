@@ -1774,15 +1774,27 @@ static void CheckForFormatStringGlobalizationIssues(const SString &format, const
 #endif
 
 #ifndef EBADF
+#ifndef __HAIKU__
 #define EBADF 9
+#else
+#define EBADF ((int)0x80006000)
+#endif
 #endif
 
 #ifndef ENOMEM
+#ifndef __HAIKU__
 #define ENOMEM 12
+#else
+#define ENOMEM ((int)0x8000000)
+#endif
 #endif
 
 #ifndef ERANGE
+#ifndef __HAIKU__
 #define ERANGE 34
+#else
+#define ERANGE ((int)0x80007011)
+#endif
 #endif
 
 #if defined(_MSC_VER)

@@ -13,6 +13,12 @@
 **============================================================*/
 #include <palsuite.h>
 
+#ifdef __HAIKU__
+#define ENOENT 0x80006003
+#else
+#define ENOENT 2
+#endif
+
 PALTEST(pal_specific_PAL_errno_test1_paltest_pal_errno_test1, "pal_specific/PAL_errno/test1/paltest_pal_errno_test1")
 {
     int err;
@@ -41,10 +47,10 @@ PALTEST(pal_specific_PAL_errno_test1_paltest_pal_errno_test1, "pal_specific/PAL_
     }
 
     /*retrieve the per-thread error value pointer*/
-    if( 2 != errno )
+    if( ENOENT != errno )
     {
         Fail("\nFailed to call PAL_errno API, this value is not correct."
-             " The correct value is ENOENT[2] ( No such file or directory.).\n");
+             " The correct value is ENOENT[2] ( No such file or directory.), but have %d.\n", errno);
     }
     
     PAL_Terminate();
