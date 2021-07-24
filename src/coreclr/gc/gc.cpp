@@ -9790,6 +9790,11 @@ void gc_heap::append_to_mark_list (uint8_t **start, uint8_t **end)
 #else
 #define __cdecl
 #endif
+#else
+#ifdef __HAIKU__
+#undef __cdecl
+#define __cdecl
+#endif
 #endif
 #endif
 
