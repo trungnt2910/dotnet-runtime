@@ -71,5 +71,6 @@
     <UnofficialBuildRID Include="linux-musl-ppc64le">
       <Platform>ppc64le</Platform>
     </UnofficialBuildRID>
+    <UnofficialBuildRID Include="haiku-x64" />
   </ItemGroup>
 </Project>
