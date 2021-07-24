@@ -15,6 +15,9 @@
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/sysctl.h>
+#elif defined(__HAIKU__)
+#include <kernel/image.h>
+#include <runtime_loader.h>
 #endif
 
 #ifdef __cplusplus
@@ -59,6 +62,20 @@ extern inline char* getexepath(void)
     }
 
     return realpath(path, NULL);
+#elif defined(__HAIKU__)
+    image_id image;
+    image_info info;
+    char* imagePath;
+
+    if(__gRuntimeLoader->get_nearest_symbol_at_address(B_CURRENT_IMAGE_SYMBOL,
+            &image, &imagePath, NULL, NULL, NULL, NULL, NULL) != B_OK) {
+        return NULL;
+    }
+
+    if (get_image_info(image, &info) != B_OK)
+        return NULL;
+
+    return realpath(info.name, NULL);
 #else
 #if HAVE_GETAUXVAL && defined(AT_EXECFN)
     const char* path = (const char *)getauxval(AT_EXECFN);
