@@ -98,6 +98,11 @@ if [[ "${__BuildArch}" != "${__HostArch}" ]] || [[ "$__BuildOS" != "$__TargetOS"
     __CrossBuild=1
 fi
 
+if [[ __CrossBuild -eq 0 ]]; then
+    echo "crossgen cross build not configured!!"
+    exit 1
+fi
+
 # Set dependent variables
 __LogsDir="$__RootBinDir/log/$__BuildType"
 

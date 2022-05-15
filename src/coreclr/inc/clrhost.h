@@ -94,7 +94,7 @@ typedef Wrapper<CRITSEC_COOKIE, DoNothing<CRITSEC_COOKIE>, VoidClrDeleteCritical
 
 DWORD GetClrModulePathName(SString& buffer);
 
-extern thread_local int t_CantAllocCount;
+extern int t_CantAllocCount;
 
 inline void IncCantAllocCount()
 {

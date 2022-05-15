@@ -432,6 +432,8 @@ enum
 #define DAC_CS_NATIVE_DATA_SIZE 56
 #elif defined(__sun) && defined(TARGET_AMD64)
 #define DAC_CS_NATIVE_DATA_SIZE 48
+#elif defined(__HAIKU__) && defined(TARGET_AMD64)
+#define DAC_CS_NATIVE_DATA_SIZE 56
 #else
 #warning
 #error  DAC_CS_NATIVE_DATA_SIZE is not defined for this architecture. This should be same value as PAL_CS_NATIVE_DATA_SIZE (aka sizeof(PAL_CS_NATIVE_DATA)).

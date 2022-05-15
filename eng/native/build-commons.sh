@@ -11,6 +11,11 @@ initTargetDistroRid()
         passedRootfsDir="$ROOTFS_DIR"
     fi
 
+    if [[ "$__CrossBuild" == 0 ]]; then
+        echo "eng/native/build-commons.sh: not cross build"
+        exit 1
+    fi
+
     initDistroRidGlobal "$__TargetOS" "$__BuildArch" "$__PortableBuild" "$passedRootfsDir"
 }
 

@@ -37,7 +37,7 @@ void* GetClrModuleBase()
 #endif // HOST_WINDOWS
 }
 
-thread_local int t_CantAllocCount;
+int t_CantAllocCount;
 
 #ifdef FAILPOINTS_ENABLED
 typedef int (*FHashStack) ();

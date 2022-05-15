@@ -15,7 +15,9 @@
 #include <stdio.h>
 #include <signal.h>
 #include <errno.h>
+#if !defined(__HAIKU__)
 #include <sys/ucontext.h>
+#endif
 #include <sys/utsname.h>
 #include <unistd.h>
 

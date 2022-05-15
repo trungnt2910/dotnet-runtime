@@ -43,7 +43,7 @@ PALTEST(c_runtime_wcstoul_test5_paltest_wcstoul_test5, "c_runtime/wcstoul/test5/
     }
     if (errno != ERANGE)
     {
-        Fail("ERROR: wcstoul did not set errno to ERANGE (%d)\n", errno);
+        Fail("ERROR: wcstoul did not set errno to ERANGE[%d] (%d)\n", ERANGE, errno);
     }
 
     errno = 0;
