@@ -21,7 +21,6 @@ set(NATIVE_SOURCES
     pal_io.c
     pal_maphardwaretype.c
     pal_memory.c
-    pal_mount.c
     pal_networking.c
     pal_networkstatistics.c
     pal_process.c
@@ -37,6 +36,10 @@ set(NATIVE_SOURCES
     pal_datetime.c
     pal_sysctl.c
 )
+
+if (NOT CLR_CMAKE_TARGET_HAIKU)
+    list (APPEND NATIVE_SOURCES pal_mount.c)
+endif()
 
 if (CLR_CMAKE_TARGET_OSX OR CLR_CMAKE_TARGET_MACCATALYST OR CLR_CMAKE_TARGET_IOS OR CLR_CMAKE_TARGET_TVOS)
     list (APPEND NATIVE_SOURCES pal_autoreleasepool.m)

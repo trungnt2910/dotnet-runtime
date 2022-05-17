@@ -93,6 +93,14 @@ SET(libunwind_la_SOURCES_os_solaris_local
 # Nothing
 )
 
+SET(libunwind_la_SOURCES_os_haiku
+	os-haiku.c
+)
+
+SET(libunwind_la_SOURCES_os_haiku_local
+# Nothing
+)
+
 if(UNW_CMAKE_TARGET_LINUX)
     SET(libunwind_la_SOURCES_os                 ${libunwind_la_SOURCES_os_linux})
     SET(libunwind_la_SOURCES_os_local           ${libunwind_la_SOURCES_os_linux_local})

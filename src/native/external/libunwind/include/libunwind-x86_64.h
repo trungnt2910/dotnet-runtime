@@ -34,11 +34,10 @@ extern "C" {
 
 #include <sys/types.h>
 #include <inttypes.h>
-#if !defined(__HAIKU__)
+#if HAVE_UCONTEXT_H
 #include <ucontext.h>
-#else
-#include <signal.h>
 #endif
+#include <signal.h>
 
 #define UNW_TARGET              x86_64
 #define UNW_TARGET_X86_64       1

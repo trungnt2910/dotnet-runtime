@@ -71,6 +71,14 @@ typedef int __ptrace_request;
 #endif // !HAVE_MACH_EXCEPTIONS
 
 #ifdef HOST_AMD64
+#ifdef __HAIKU__
+#define ASSIGN_CONTROL_REGS \
+        ASSIGN_REG(Rbp)     \
+        ASSIGN_REG(Rip)     \
+        ASSIGN_REG(EFlags)  \
+        ASSIGN_REG(Rsp)     \
+
+#else
 #define ASSIGN_CONTROL_REGS \
         ASSIGN_REG(Rbp)     \
         ASSIGN_REG(Rip)     \
@@ -78,6 +86,7 @@ typedef int __ptrace_request;
         ASSIGN_REG(EFlags)  \
         ASSIGN_REG(Rsp)     \
 
+#endif
 #define ASSIGN_INTEGER_REGS \
         ASSIGN_REG(Rdi)     \
         ASSIGN_REG(Rsi)     \
@@ -95,6 +104,15 @@ typedef int __ptrace_request;
         ASSIGN_REG(R15)     \
 
 #elif defined(HOST_X86)
+#ifdef __HAIKU__
+#define ASSIGN_CONTROL_REGS \
+        ASSIGN_REG(Ebp)     \
+        ASSIGN_REG(Eip)     \
+        ASSIGN_REG(EFlags)  \
+        ASSIGN_REG(Esp)     \
+        ASSIGN_REG(SegSs)   \
+
+#else
 #define ASSIGN_CONTROL_REGS \
         ASSIGN_REG(Ebp)     \
         ASSIGN_REG(Eip)     \
@@ -103,6 +121,7 @@ typedef int __ptrace_request;
         ASSIGN_REG(Esp)     \
         ASSIGN_REG(SegSs)   \
 
+#endif
 #define ASSIGN_INTEGER_REGS \
         ASSIGN_REG(Edi)     \
         ASSIGN_REG(Esi)     \

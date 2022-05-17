@@ -33,7 +33,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <libunwind-x86_64.h>
 
 #include "libunwind_i.h"
-#if !defined(__HAIKU__)
+#if HAVE_UCONTEXT_H
 #include <ucontext.h>
 #endif
 

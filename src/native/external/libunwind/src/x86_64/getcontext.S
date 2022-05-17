@@ -89,8 +89,6 @@ _Ux86_64_getcontext:
 #endif
 	movq $UC_MCONTEXT_MC_LEN_VAL, UC_MCONTEXT_MC_LEN(%rdi)
 #elif defined __HAIKU__
-	# I've got no clue, lol; maybe FP state is only thing needed
-	fxsave UC_MCONTEXT_FPSTATE(%rdi)
 #else
 #error Port me
 #endif

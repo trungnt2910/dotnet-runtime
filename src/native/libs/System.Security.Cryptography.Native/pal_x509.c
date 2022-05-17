@@ -10,6 +10,10 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifdef __HAIKU__
+#include <storage/StorageDefs.h>
+#endif
+
 c_static_assert(PAL_X509_V_OK == X509_V_OK);
 c_static_assert(PAL_X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT == X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT);
 c_static_assert(PAL_X509_V_ERR_UNABLE_TO_GET_CRL == X509_V_ERR_UNABLE_TO_GET_CRL);
@@ -441,7 +445,11 @@ static DIR* OpenUserStore(const char* storePath, char** pathTmp, size_t* pathTmp
 
     // d_name is a fixed length char[], not a char*.
     // Leave one byte for '\0' and one for '/'
+#if defined(__HAIKU__)
+    size_t allocSize = B_FILE_NAME_LENGTH + 2;
+#else
     size_t allocSize = storePathLen + sizeof(ent->d_name) + 2;
+#endif
     char* tmp = (char*)calloc(allocSize, sizeof(char));
     memcpy_s(tmp, allocSize, storePath, storePathLen);
     tmp[storePathLen] = '/';
@@ -463,7 +471,11 @@ static X509* ReadNextPublicCert(DIR* dir, X509Stack* tmpStack, char* pathTmp, si
 
     while ((next = readdir(dir)) != NULL)
     {
+#ifdef __HAIKU__
+        size_t len = strnlen(next->d_name, NAME_MAX);
+#else
         size_t len = strnlen(next->d_name, sizeof(next->d_name));
+#endif
 
         if (len > 4 && 0 == strncasecmp(".pfx", next->d_name + len - 4, 4))
         {

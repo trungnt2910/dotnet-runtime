@@ -641,7 +641,6 @@ inline void *FPREG_Xstate_Ymmh(const ucontext_t *uc)
 #define MCREG_R15(mc)	    ((mc).r15)
 #define MCREG_EFlags(mc)    ((mc).rflags)
 // haiku: missing SegCs
-#define MCREG_SegCs(mc)     ((mc).cs)
 
 #define FPSTATE(uc)             ((uc)->uc_mcontext.fpu)
 #define FPREG_ControlWord(uc)   FPSTATE(uc).fp_fxsave.control

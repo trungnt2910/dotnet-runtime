@@ -38,8 +38,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #elif defined UNW_LOCAL_ONLY && defined __HAIKU__
 # define REG_INIT_LOC(c, rlc, ruc) \
-    DWARF_LOC ((unw_word_t) &c->uc->uc_mcontext.rlc, 0)
-# undef CTX
+	  DWARF_LOC ((unw_word_t) &dwarf_get_uc(&c->dwarf)->uc_mcontext.rlc, 0)
 
 #else
 # define REG_INIT_LOC(c, rlc, ruc) \

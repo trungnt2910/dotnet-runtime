@@ -29,9 +29,9 @@ if(CLR_CMAKE_HOST_WIN32)
 else(CLR_CMAKE_HOST_WIN32)
     if (NOT CLR_CMAKE_TARGET_HAIKU)
         target_link_libraries(corerun ${CMAKE_DL_LIBS})
+        # Required to expose symbols for global symbol discovery
+        target_link_libraries(corerun -rdynamic)
     endif()
-    # Required to expose symbols for global symbol discovery
-    target_link_libraries(corerun -rdynamic)
 
     # Android implements pthread natively
     if(NOT CLR_CMAKE_TARGET_ANDROID AND NOT CLR_CMAKE_TARGET_HAIKU)

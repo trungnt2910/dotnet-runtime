@@ -45,7 +45,9 @@
 #elif !HAVE_NON_LEGACY_STATFS // SunOS
 #include <sys/types.h>
 #include <sys/statvfs.h>
+#ifndef __HAIKU__
 #include <sys/vfs.h>
+#endif
 #endif
 
 #ifdef _AIX
@@ -773,18 +775,28 @@ int32_t SystemNative_SymLink(const char* target, const char* linkPath)
 
 void SystemNative_GetDeviceIdentifiers(uint64_t dev, uint32_t* majorNumber, uint32_t* minorNumber)
 {
+#ifndef __HAIKU__
     dev_t castedDev = (dev_t)dev;
     *majorNumber = (uint32_t)major(castedDev);
     *minorNumber = (uint32_t)minor(castedDev);
+#else
+    *majorNumber = 0;
+    *minorNumber = 0;
+#endif
 }
 
 int32_t SystemNative_MkNod(const char* pathName, uint32_t mode, uint32_t major, uint32_t minor)
 {
+#ifdef __HAIKU__
+    // Haiku doesn't have makedev, and mknod unconditionally returns ENOTSUP anyway
+    return -1;
+#else
     dev_t dev = (dev_t)makedev(major, minor);
 
     int32_t result;
     while ((result = mknod(pathName, (mode_t)mode, dev)) < 0 && errno == EINTR);
     return result;
+#endif
 }
 
 int32_t SystemNative_MkFifo(const char* pathName, uint32_t mode)
@@ -1620,7 +1632,9 @@ uint32_t SystemNative_GetFileSystemType(intptr_t __attribute__((unused)))
 uint32_t SystemNative_GetFileSystemType(intptr_t fd)
 #endif
 {
-#if HAVE_STATFS_VFS || HAVE_STATFS_MOUNT
+#ifdef __HAIKU__
+    return (int64_t)-1;
+#elif HAVE_STATFS_VFS || HAVE_STATFS_MOUNT
     int statfsRes;
     struct statfs statfsArgs;
     // for our needs (get file system type) statfs is always enough and there is no need to use statfs64

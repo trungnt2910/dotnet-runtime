@@ -119,16 +119,31 @@ case "$host_os" in
     ;;
 esac
 
+# Add headers on Haiku
+AC_MSG_CHECKING([for Haiku])
+case "$host_os" in
+  haiku)
+    CPPFLAGS="${CPPFLAGS} -I/system/develop/headers/private/runtime_loader"
+    CPPFLAGS="${CPPFLAGS} -I/system/develop/headers/private/system"
+    CPPFLAGS="${CPPFLAGS} -I/system/develop/headers/private/system/arch/$host_arch"
+    AC_MSG_RESULT([yes])
+    ;;
+  *)
+    AC_MSG_RESULT([no])
+    ;;
+esac
+
 AC_ARG_ENABLE(coredump,
 	AS_HELP_STRING([--enable-coredump],[building libunwind-coredump library]),,
         [AS_CASE([$host_arch], [aarch64*|arm*|mips*|sh*|x86*|tile*|riscv*|loongarch64], [enable_coredump=yes], [enable_coredump=no])]
 )
 
-case "$host_os" in
-  *haiku*)
-    enable_coredump=no
-    ;;
-esac
+# Disable coredump if prstatus is missing
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#if !defined(HAVE_STRUCT_ELF_PRSTATUS) && !defined(HAVE_STRUCT_PRSTATUS)
+#error choke
+#endif
+]])], [], [enable_coredump=no])
 
 AC_MSG_CHECKING([if we should build libunwind-coredump])
 AC_MSG_RESULT([$enable_coredump])
@@ -200,6 +215,7 @@ AM_CONDITIONAL(ARCH_LOONGARCH64, test x$target_arch = xloongarch64)
 AM_CONDITIONAL(OS_LINUX, expr x$target_os : xlinux >/dev/null)
 AM_CONDITIONAL(OS_HPUX, expr x$target_os : xhpux >/dev/null)
 AM_CONDITIONAL(OS_FREEBSD, expr x$target_os : xfreebsd >/dev/null)
+AM_CONDITIONAL(OS_HAIKU, expr x$target_os : xhaiku >/dev/null)
 AM_CONDITIONAL(OS_QNX, expr x$target_os : xnto-qnx >/dev/null)
 AM_CONDITIONAL(OS_SOLARIS, expr x$target_os : xsolaris >/dev/null)
 

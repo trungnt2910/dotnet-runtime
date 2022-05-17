@@ -75,7 +75,7 @@ siglongjmp (sigjmp_buf env, int val)
     {
       if (unw_get_reg (&c, UNW_REG_SP, &sp) < 0)
         abort ();
-#if defined(__FreeBSD__) || defined(__HAIKU__)
+#ifdef __FreeBSD__
       if (sp != wp[JB_SP] + sizeof(unw_word_t))
 #else
       if (sp != wp[JB_SP])

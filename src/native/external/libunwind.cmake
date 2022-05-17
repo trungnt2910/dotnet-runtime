@@ -69,6 +69,15 @@ set(libunwind_la_SOURCES_os_solaris_local
 # Nothing
 )
 
+set(libunwind_la_SOURCES_os_haiku
+    os-haiku.c
+    dl-iterate-phdr.c
+)
+
+set(libunwind_la_SOURCES_os_Haiku_local
+# Nothing
+)
+
 if(CLR_CMAKE_TARGET_LINUX)
     set(libunwind_la_SOURCES_os                 ${libunwind_la_SOURCES_os_linux})
     set(libunwind_la_SOURCES_os_local           ${libunwind_la_SOURCES_os_linux_local})
@@ -96,6 +105,11 @@ elseif(CLR_CMAKE_HOST_SUNOS)
     set(libunwind_la_SOURCES_os_local           ${libunwind_la_SOURCES_os_solaris_local})
     set(libunwind_la_SOURCES_x86_64_os          x86_64/Gos-solaris.c)
     set(libunwind_la_SOURCES_x86_64_os_local    x86_64/Los-solaris.c)
+elseif(CLR_CMAKE_TARGET_HAIKU)
+    set(libunwind_la_SOURCES_os                 ${libunwind_la_SOURCES_os_haiku})
+    set(libunwind_la_SOURCES_os_local           ${libunwind_la_SOURCES_os_haiku_local})
+    set(libunwind_la_SOURCES_x86_64_os          x86_64/Gos-haiku.c)
+    set(libunwind_la_SOURCES_x86_64_os_local    x86_64/Los-haiku.c)
 endif()
 
 # List of arch-independent files needed by both local-only and generic
