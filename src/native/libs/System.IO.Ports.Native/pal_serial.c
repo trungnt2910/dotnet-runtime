@@ -48,7 +48,7 @@ int SystemIoPortsNative_SerialPortClose(intptr_t handle)
 // FIXME: Haiku doesn't have ioctl for exclusive access
 #if !defined(__HAIKU__)
     // ignoring the error - best effort
-    ioctl(fd, TIOCNXCL)
+    ioctl(fd, TIOCNXCL);
 #endif
     return close(fd);
 }

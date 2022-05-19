@@ -15,7 +15,10 @@
 #include <stdio.h>
 #include <signal.h>
 #include <errno.h>
+// Haiku OS doesn't provide this header, because the latest POSIX standard doesn't require it to.
+#if !__HAIKU__
 #include <sys/ucontext.h>
+#endif
 #include <sys/utsname.h>
 #include <unistd.h>
 
