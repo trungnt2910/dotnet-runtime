@@ -58,6 +58,14 @@ static inline char* minipal_getexepath(void)
     }
 
     return strdup(path);
+#elif defined(__HAIKU__)
+    char path[B_PATH_NAME_LENGTH];
+    if (find_path(B_APP_IMAGE_SYMBOL, B_FIND_PATH_IMAGE_PATH, NULL, path, B_PATH_NAME_LENGTH) != B_OK)
+    {
+        return NULL;
+    }
+
+    return realpath(path, NULL);
 #elif defined(__sun)
     const char* path = getexecname();
     if (path == NULL)
