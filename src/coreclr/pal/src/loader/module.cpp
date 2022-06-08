@@ -42,9 +42,19 @@ SET_DEFAULT_DEBUG_CHANNEL(LOADER); // some headers have code with asserts, so do
 #include <dlfcn.h>
 #include <stdlib.h>
 
-#ifdef __APPLE__
+#if defined(__APPLE__)
 #include <mach-o/dyld.h>
 #include <mach-o/loader.h>
+#elif defined(__HAIKU__)
+#include <kernel/image.h>
+#include <os/kernel/elf.h>
+#include <stddef.h>
+
+#if B_HAIKU_32_BIT
+	typedef Elf32_Ehdr Elf_Ehdr;
+#elif B_HAIKU_64_BIT
+	typedef Elf64_Ehdr Elf_Ehdr;
+#endif
 #else
 #include <link.h>
 #endif // __APPLE__
@@ -946,7 +956,7 @@ void handle_image_range(uint8_t* source_start, size_t size, struct CopyModuleDat
     param->result = std::max(param->result, (int)(source_end - param->module_base));
 }
 
-#ifdef __APPLE__
+#if defined(__APPLE__)
 PALIMPORT
 int
 PALAPI
@@ -990,6 +1000,45 @@ PAL_CopyModuleData(PVOID moduleBase, PVOID destinationBufferStart, PVOID destina
             }
         }
     }
+    return param.result;
+}
+#elif defined(__HAIKU__)
+PALIMPORT
+int
+PALAPI
+PAL_CopyModuleData(PVOID moduleBase, PVOID destinationBufferStart, PVOID destinationBufferEnd)
+{
+    image_info info;
+	int32 cookie = 0;
+	int status;
+
+    CopyModuleDataParam param;
+    param.destination_buffer_start = (uint8_t*)destinationBufferStart;
+    param.destination_buffer_end = (uint8_t*)destinationBufferEnd;
+    param.module_base = (uint8_t*)moduleBase;
+    param.result = 0;
+
+   	while (get_next_image_info(0, &cookie, &info) == B_OK)
+    {
+        if (info.text == moduleBase)
+        {
+            const Elf_Ehdr* header = (const Elf_Ehdr*)info.text;
+            Elf_Half dlpi_phnum = header->e_phnum;
+            const Elf_Phdr* dlpi_phdr =
+                (const Elf_Phdr*)((const uint8_t*)info.text + header->e_phoff);
+
+            for (Elf_Half j = 0; j < dlpi_phnum; j++)
+            {
+                if (dlpi_phdr[j].p_type == PT_LOAD)
+                {
+                    Elf32_Word size = dlpi_phdr[j].p_memsz;
+                    uint8_t* source_start = (uint8_t*)info.text + dlpi_phdr[j].p_vaddr;
+                    handle_image_range(source_start, size, &param);
+                }
+            }
+        }
+    }
+
     return param.result;
 }
 #else
