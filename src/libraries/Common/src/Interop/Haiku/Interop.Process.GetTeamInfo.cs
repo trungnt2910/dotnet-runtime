@@ -12,11 +12,11 @@ internal static partial class Interop
     {
         private const int B_OS_NAME_LENGTH = 32;
 
-        [DllImport(Libraries.SystemNative, EntryPoint = "SystemNative_TeamInfo", SetLastError = false)]
-        private static extern unsafe int TeamInfo(int id, team_info *info, ulong size);
+        [DllImport(Interop.Libraries.libroot, SetLastError = false)]
+        private static extern unsafe int _get_team_info(int id, team_info *info, ulong size);
 
-        [DllImport(Libraries.SystemNative, EntryPoint = "SystemNative_NextAreaInfo", SetLastError = false)]
-        private static extern unsafe int NextAreaInfo(int id, long *cookie, area_info *areaInfo, ulong size);
+        [DllImport(Interop.Libraries.libroot, SetLastError = false)]
+        private static extern unsafe int _get_next_area_info(int id, long *cookie, area_info *areaInfo, ulong size);
 
         [StructLayout(LayoutKind.Sequential)]
         public unsafe struct area_info
@@ -57,7 +57,7 @@ internal static partial class Interop
             IntPtr handle = Marshal.AllocHGlobal(sizeof(team_info));
             team_info* teamInfo = (team_info*)handle;
 
-            int status = TeamInfo(id, teamInfo, (ulong)sizeof(team_info));
+            int status = _get_team_info(id, teamInfo, (ulong)sizeof(team_info));
 
             if (status != 0)
             {
@@ -77,7 +77,7 @@ internal static partial class Interop
         /// <returns>0 if successful.</returns>
         public static unsafe int GetNextAreaInfo(int team, long* cookie, area_info* info)
         {
-            return NextAreaInfo(team, cookie, info, (ulong)sizeof(area_info));
+            return _get_next_area_info(team, cookie, info, (ulong)sizeof(area_info));
         }
 
         public static unsafe area_info* AllocAreaInfo()

@@ -27,7 +27,6 @@
 #include "pal_string.h"
 #include "pal_sysctl.h"
 #include "pal_tcpstate.h"
-#include "pal_teaminfo.h"
 #include "pal_threading.h"
 #include "pal_time.h"
 #include "pal_uid.h"
@@ -273,8 +272,6 @@ static const Entry s_sysNative[] =
     DllImportEntry(SystemNative_GetEnviron)
     DllImportEntry(SystemNative_FreeEnviron)
     DllImportEntry(SystemNative_GetGroupName)
-    DllImportEntry(SystemNative_TeamInfo)
-    DllImportEntry(SystemNative_NextAreaInfo)
 };
 
 EXTERN_C const void* SystemResolveDllImport(const char* name);

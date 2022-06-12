@@ -28,7 +28,6 @@ set(NATIVE_SOURCES
     pal_runtimeinformation.c
     pal_signal.c
     pal_string.c
-#    pal_teaminfo.c
     pal_tcpstate.c
     pal_threading.c
     pal_time.c
@@ -82,11 +81,6 @@ endif ()
 
 if (NOT CLR_CMAKE_TARGET_BROWSER)
     list (APPEND NATIVE_SOURCES pal_networkchange.c)
-endif ()
-
-if (CLR_CMAKE_TARGET_HAIKU)
-    list (APPEND NATIVE_SOURCES
-        pal_teaminfo.c)
 endif ()
 
 include(${CMAKE_CURRENT_LIST_DIR}/extra_libs.cmake)
