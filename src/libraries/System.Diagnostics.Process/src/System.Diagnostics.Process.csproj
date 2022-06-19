@@ -346,6 +346,8 @@
     <Compile Include="System\Diagnostics\ProcessManager.iOS.cs" />
     <Compile Include="System\Diagnostics\ProcessThread.iOS.cs" />
   <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'Haiku'">
+    <Compile Include="$(CommonPath)Interop\Haiku\Interop.Libraries.cs"
+             Link="Common\Interop\Haiku\Interop.Libraries.cs" />
     <Compile Include="$(CommonPath)Interop\Haiku\Interop.Process.GetTeamInfo.cs"
              Link="Common\Interop\Haiku\Interop.Process.GetTeamInfo.cs" />
     <Compile Include="$(CommonPath)Interop\Unix\System.Native\Interop.Stat.cs"
