@@ -309,6 +309,7 @@ elseif(ILLUMOS)
   add_toolchain_linker_flag("-L${CROSS_ROOTFS}/usr/amd64/lib")
 elseif(HAIKU)
   add_toolchain_linker_flag("-lnetwork")
+  add_toolchain_linker_flag("-lroot")
 endif()
 
 # Specify compile options
