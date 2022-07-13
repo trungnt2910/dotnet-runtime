@@ -14,6 +14,10 @@ if (CLR_CMAKE_TARGET_OSX)
     add_definitions(-D_DARWIN_C_SOURCE)
 endif ()
 
+if (CLR_CMAKE_TARGET_HAIKU)
+    include_directories(SYSTEM ${CROSS_ROOTFS}/boot/system/develop/headers/private/libs/compat/freebsd_network/compat)
+endif ()
+
 set(NATIVE_SOURCES
     pal_dynamicload.c
     pal_errno.c

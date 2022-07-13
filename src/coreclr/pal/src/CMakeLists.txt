@@ -16,7 +16,7 @@ if(NOT CLR_CMAKE_USE_SYSTEM_LIBUNWIND)
   include_directories(${CLR_ARTIFACTS_OBJ_DIR}/external/libunwind/include/tdep)
 
   add_subdirectory(${CLR_SRC_NATIVE_DIR}/external/libunwind_extras ${CLR_ARTIFACTS_OBJ_DIR}/external/libunwind)
-elseif(NOT CLR_CMAKE_TARGET_OSX AND NOT CLR_CMAKE_TARGET_HAIKU)
+elseif(NOT CLR_CMAKE_TARGET_OSX)
   find_unwind_libs(UNWIND_LIBS)
 else()
   add_subdirectory(${CLR_SRC_NATIVE_DIR}/external/libunwind_extras ${CLR_ARTIFACTS_OBJ_DIR}/external/libunwind)
@@ -341,6 +341,12 @@ if(CLR_CMAKE_TARGET_SUNOS)
     rt
   )
 endif(CLR_CMAKE_TARGET_SUNOS)
+
+if(CLR_CMAKE_TARGET_HAIKU)
+  target_link_libraries(coreclrpal
+    ${UNWIND_LIBS}
+  )
+endif(CLR_CMAKE_TARGET_HAIKU)
 
 if(FEATURE_EVENT_TRACE)
   add_subdirectory(eventprovider)

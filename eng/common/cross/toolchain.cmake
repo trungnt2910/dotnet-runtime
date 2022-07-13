@@ -9,11 +9,7 @@ elseif(EXISTS ${CROSS_ROOTFS}/usr/platform/i86pc)
   set(ILLUMOS 1)
 elseif(EXISTS ${CROSS_ROOTFS}/boot/system/develop/headers/config/HaikuConfig.h)
   set(CMAKE_SYSTEM_NAME Haiku)
-<<<<<<< HEAD
   set(HAIKU 1)
-=======
-  message(STATUS "found haiku cross install")
->>>>>>> f21e82b367d (haiku: fixes to toolchain config)
 else()
   set(CMAKE_SYSTEM_NAME Linux)
   set(LINUX 1)
@@ -339,10 +335,6 @@ if(TARGET_ARCH_NAME MATCHES "^(arm|armel)$")
 elseif(TARGET_ARCH_NAME STREQUAL "x86")
   add_compile_options(-m32)
   add_compile_options(-Wno-error=unused-command-line-argument)
-elseif(HAIKU)
-  add_compile_options(-fPIC)
-  add_definitions(-D_GNU_SOURCE)
-  add_definitions(-D_BSD_SOURCE)
 endif()
 
 if(TIZEN)
@@ -350,6 +342,12 @@ if(TIZEN)
     add_compile_options(-Wno-deprecated-declarations) # compile-time option
     add_compile_options(-D__extern_always_inline=inline) # compile-time option
   endif()
+endif()
+
+if(HAIKU)
+  add_compile_options(-fPIC)
+  add_definitions(-D_GNU_SOURCE)
+  add_definitions(-D_BSD_SOURCE)
 endif()
 
 # Set LLDB include and library paths for builds that need lldb.
