@@ -1379,8 +1379,8 @@ elseif(CLR_CMAKE_TARGET_SUNOS)
   set(PAL_PT_WRITE_D PT_WRITE_D)
   set(HAS_FTRUNCATE_LENGTH_ISSUE 0)
 elseif(CLR_CMAKE_TARGET_HAIKU)
-  message(WARNING "src/coreclr/pal/configure.cmake: set a bunch of PAL things")
-  # these are guesses for now
+  # Tests work so it should be OK
+  # Haiku does not have ptrace.
   set(DEADLOCK_WHEN_THREAD_IS_SUSPENDED_WHILE_BLOCKED_ON_MUTEX 0)
   set(HAS_FTRUNCATE_LENGTH_ISSUE 0)
 else() # Anything else is Linux
