@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <limits.h>
 
-int32_t SystemNative_GetAllMountPoints(MountPointFound onFound)
+int32_t SystemNative_GetAllMountPoints(MountPointFound onFound, void* context)
 {
     return 0;
 }
