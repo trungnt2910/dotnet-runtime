@@ -774,6 +774,9 @@ inline SIZE_T PlatformGetCurrentThreadId() {
 #elif defined(__NetBSD__)
 #include <lwp.h>
 #define PlatformGetCurrentThreadId() (SIZE_T)_lwp_self()
+#elif defined(__HAIKU__)
+#include <OS.h>
+#define PlatformGetCurrentThreadId() (SIZE_T)find_thread(NULL)
 #else
 #define PlatformGetCurrentThreadId() (SIZE_T)pthread_self()
 #endif
