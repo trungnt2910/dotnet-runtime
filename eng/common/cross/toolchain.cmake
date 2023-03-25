@@ -6,6 +6,7 @@ unset(FREEBSD)
 unset(ILLUMOS)
 unset(ANDROID)
 unset(TIZEN)
+unset(HAIKU)
 
 set(TARGET_ARCH_NAME $ENV{TARGET_BUILD_ARCH})
 if(EXISTS ${CROSS_ROOTFS}/bin/freebsd-version)
@@ -16,6 +17,7 @@ elseif(EXISTS ${CROSS_ROOTFS}/usr/platform/i86pc)
   set(ILLUMOS 1)
 elseif(EXISTS ${CROSS_ROOTFS}/boot/system/develop/headers/config/HaikuConfig.h)
   set(CMAKE_SYSTEM_NAME Haiku)
+  set(HAIKU 1)
 else()
   set(CMAKE_SYSTEM_NAME Linux)
   set(LINUX 1)
@@ -86,7 +88,7 @@ elseif(TARGET_ARCH_NAME STREQUAL "x64")
   elseif(ILLUMOS)
     set(TOOLCHAIN "x86_64-illumos")
   elseif(HAIKU)
-    set(TOOLCHAIN "x64_64-unknown-haiku")
+    set(TOOLCHAIN "x86_64-unknown-haiku")
   endif()
 elseif(TARGET_ARCH_NAME STREQUAL "x86")
   set(CMAKE_SYSTEM_PROCESSOR i686)
@@ -196,10 +198,8 @@ elseif(HAIKU)
             return()
         endif()
 
-        set(SEARCH_PATH "${CROSS_ROOTFS}/generated/cross-tools-x86_64/bin")
-
         find_program(EXEC_LOCATION_${exec}
-            PATHS ${SEARCH_PATH}
+            PATHS "${CROSS_ROOTFS}/cross-tools-x86_64/bin"
             NAMES
             "${TOOLSET_PREFIX}${exec}${CLR_CMAKE_COMPILER_FILE_NAME_VERSION}"
             "${TOOLSET_PREFIX}${exec}")
@@ -275,6 +275,9 @@ elseif(TARGET_ARCH_NAME STREQUAL "x86")
 elseif(ILLUMOS)
   add_toolchain_linker_flag("-L${CROSS_ROOTFS}/lib/amd64")
   add_toolchain_linker_flag("-L${CROSS_ROOTFS}/usr/amd64/lib")
+elseif(HAIKU)
+  add_toolchain_linker_flag("-lnetwork")
+  add_toolchain_linker_flag("-lroot")
 endif()
 
 # Specify compile options
@@ -311,6 +314,12 @@ if(TIZEN)
     add_compile_options(-Wno-deprecated-declarations) # compile-time option
     add_compile_options(-D__extern_always_inline=inline) # compile-time option
   endif()
+endif()
+
+if(HAIKU)
+  add_compile_options(-fPIC)
+  add_definitions(-D_GNU_SOURCE)
+  add_definitions(-D_BSD_SOURCE)
 endif()
 
 # Set LLDB include and library paths for builds that need lldb.
