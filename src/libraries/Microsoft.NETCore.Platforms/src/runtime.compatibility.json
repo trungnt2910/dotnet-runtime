@@ -5347,6 +5347,37 @@
     "any",
     "base"
   ],
+  "haiku": [
+    "haiku",
+    "unix",
+    "any",
+    "base"
+  ],
+  "haiku-x64": [
+    "haiku-x64",
+    "haiku",
+    "unix-x64",
+    "unix",
+    "any",
+    "base"
+  ],
+  "haiku.1": [
+    "haiku.1",
+    "haiku",
+    "unix",
+    "any",
+    "base"
+  ],
+  "haiku.1-x64": [
+    "haiku.1-x64",
+    "haiku.1",
+    "haiku-x64",
+    "haiku",
+    "unix-x64",
+    "unix",
+    "any",
+    "base"
+  ],
   "illumos": [
     "illumos",
     "unix",
