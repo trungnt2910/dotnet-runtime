@@ -1728,6 +1728,28 @@
         "linux-x64"
       ]
     },
+    "haiku": {
+      "#import": [
+        "unix"
+      ]
+    },
+    "haiku-x64": {
+      "#import": [
+        "haiku",
+        "unix-x64"
+      ]
+    },
+    "haiku.1": {
+      "#import": [
+        "haiku"
+      ]
+    },
+    "haiku.1-x64": {
+      "#import": [
+        "haiku.1",
+        "haiku-x64"
+      ]
+    },
     "illumos": {
       "#import": [
         "unix"

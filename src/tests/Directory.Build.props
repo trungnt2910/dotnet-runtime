@@ -148,7 +148,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetsUnknownUnix Condition="'$(TargetsUnix)' == 'true' AND '$(TargetOS)' != 'freebsd' AND '$(TargetOS)' != 'linux' AND '$(TargetOS)' != 'netbsd' AND '$(TargetOS)' != 'osx' AND '$(TargetOS)' != 'maccatalyst' AND '$(TargetOS)' != 'illumos' AND '$(TargetOS)' != 'solaris'">true</TargetsUnknownUnix>
+    <TargetsUnknownUnix Condition="'$(TargetsUnix)' == 'true' AND '$(TargetOS)' != 'freebsd' AND '$(TargetOS)' != 'linux' AND '$(TargetOS)' != 'netbsd' AND '$(TargetOS)' != 'osx' AND '$(TargetOS)' != 'maccatalyst' AND '$(TargetOS)' != 'illumos' AND '$(TargetOS)' != 'solaris' AND '$(TargetOS)' != 'haiku'">true</TargetsUnknownUnix>
     <Language Condition="'$(Language)' == '' and  '$(MSBuildProjectExtension)' == '.csproj'">C#</Language>
     <Language Condition="'$(Language)' == '' and  '$(MSBuildProjectExtension)' == '.fsproj'">F#</Language>
     <Language Condition="'$(Language)' == '' and  '$(MSBuildProjectExtension)' == '.ilproj'">IL</Language>

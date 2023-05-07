@@ -145,6 +145,10 @@ else()
   # Compile unwinding only for the current compilation target architecture
   add_definitions(-D_LIBUNWIND_IS_NATIVE_ONLY)
 
+  if(CLR_CMAKE_TARGET_HAIKU)
+    add_definitions(-DPT_GNU_EH_FRAME=PT_EH_FRAME)
+  endif()
+
   list(APPEND COMMON_RUNTIME_SOURCES
     unix/PalRedhawkUnix.cpp
     ${GC_DIR}/unix/gcenv.unix.cpp

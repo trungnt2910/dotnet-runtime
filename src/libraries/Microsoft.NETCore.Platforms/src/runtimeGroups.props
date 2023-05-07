@@ -215,6 +215,12 @@
       <Versions>2020;2021</Versions>
     </RuntimeGroup>
 
+    <RuntimeGroup Include="haiku">
+      <Parent>unix</Parent>
+      <Architectures>x64</Architectures>
+      <Versions>1</Versions>
+    </RuntimeGroup>
+
     <!-- rhel 6 is independent -->
     <RuntimeGroup Include="rhel">
       <Parent>linux</Parent>

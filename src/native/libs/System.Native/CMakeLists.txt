@@ -14,6 +14,10 @@ if (CLR_CMAKE_TARGET_OSX)
     add_definitions(-D_DARWIN_C_SOURCE)
 endif ()
 
+if (CLR_CMAKE_TARGET_HAIKU)
+    enable_language(CXX)
+endif ()
+
 set(NATIVE_SOURCES
     pal_errno.c
     pal_interfaceaddresses.c
