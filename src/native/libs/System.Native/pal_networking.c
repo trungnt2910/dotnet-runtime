@@ -21,6 +21,8 @@
 #include <sys/event.h>
 #elif HAVE_SYS_POLL_H
 #include <sys/poll.h>
+#else
+#include <poll.h>
 #endif
 #if HAVE_SYS_PROCINFO_H
 #include <sys/proc_info.h>
@@ -634,6 +636,10 @@ int32_t SystemNative_GetDomainName(uint8_t* name, int32_t nameLength)
 
     // Copy the domain name
     SafeStringCopy((char*)name, namelen, uts.domainname);
+    return 0;
+#elif defined(__HAIKU__)
+    // Haiku does not support NIS domains.
+    *name = '\0';
     return 0;
 #else
     // GetDomainName is not supported on this platform.
@@ -1874,10 +1880,13 @@ static bool TryGetPlatformSocketOption(int32_t socketOptionLevel, int32_t socket
 
                 // case SocketOptionName_SO_TCP_BSDURGENT:
 
+#ifdef TCP_KEEPCNT
                 case SocketOptionName_SO_TCP_KEEPALIVE_RETRYCOUNT:
                     *optName = TCP_KEEPCNT;
                     return true;
+#endif
 
+#if defined(TCP_KEEPALIVE) || defined(TCP_KEEPIDLE)
                 case SocketOptionName_SO_TCP_KEEPALIVE_TIME:
                     *optName =
                     #if HAVE_TCP_H_TCP_KEEPALIVE
@@ -1886,10 +1895,13 @@ static bool TryGetPlatformSocketOption(int32_t socketOptionLevel, int32_t socket
                         TCP_KEEPIDLE;
                     #endif
                     return true;
+#endif
 
+#ifdef TCP_KEEPINTVL
                 case SocketOptionName_SO_TCP_KEEPALIVE_INTERVAL:
                     *optName = TCP_KEEPINTVL;
                     return true;
+#endif
 
                 default:
                     return false;
@@ -2652,7 +2664,7 @@ static uint32_t GetEPollEvents(SocketEvents events)
            (((events & SocketEvents_SA_ERROR) != 0) ? EPOLLERR : 0);
 }
 
-static int32_t CreateSocketEventPortInner(int32_t* port)
+static int32_t CreateSocketEventPortInner(intptr_t* port)
 {
     assert(port != NULL);
 
@@ -2667,14 +2679,15 @@ static int32_t CreateSocketEventPortInner(int32_t* port)
     return Error_SUCCESS;
 }
 
-static int32_t CloseSocketEventPortInner(int32_t port)
+static int32_t CloseSocketEventPortInner(intptr_t port)
 {
-    int err = close(port);
+    int fd = ToFileDescriptor(port);
+    int err = close(fd);
     return err == 0 || (err < 0 && errno == EINTR) ? Error_SUCCESS : SystemNative_ConvertErrorPlatformToPal(errno);
 }
 
 static int32_t TryChangeSocketEventRegistrationInner(
-    int32_t port, int32_t socket, SocketEvents currentEvents, SocketEvents newEvents, uintptr_t data)
+    intptr_t port, int32_t socket, SocketEvents currentEvents, SocketEvents newEvents, uintptr_t data)
 {
     assert(currentEvents != newEvents);
 
@@ -2688,11 +2701,12 @@ static int32_t TryChangeSocketEventRegistrationInner(
         op = EPOLL_CTL_DEL;
     }
 
+    int fd = ToFileDescriptor(port);
     struct epoll_event evt;
     memset(&evt, 0, sizeof(struct epoll_event));
     evt.events = GetEPollEvents(newEvents) | (unsigned int)EPOLLET;
     evt.data.ptr = (void*)data;
-    int err = epoll_ctl(port, op, socket, &evt);
+    int err = epoll_ctl(fd, op, socket, &evt);
     return err == 0 ? Error_SUCCESS : SystemNative_ConvertErrorPlatformToPal(errno);
 }
 
@@ -2716,15 +2730,16 @@ static void ConvertEventEPollToSocketAsync(SocketEvent* sae, struct epoll_event*
     sae->Events = GetSocketEvents(events);
 }
 
-static int32_t WaitForSocketEventsInner(int32_t port, SocketEvent* buffer, int32_t* count)
+static int32_t WaitForSocketEventsInner(intptr_t port, SocketEvent* buffer, int32_t* count)
 {
     assert(buffer != NULL);
     assert(count != NULL);
     assert(*count >= 0);
 
+    int fd = ToFileDescriptor(port);
     struct epoll_event* events = (struct epoll_event*)buffer;
     int numEvents;
-    while ((numEvents = epoll_wait(port, events, *count, -1)) < 0 && errno == EINTR);
+    while ((numEvents = epoll_wait(fd, events, *count, -1)) < 0 && errno == EINTR);
     if (numEvents == -1)
     {
         *count = 0;
@@ -2807,7 +2822,7 @@ static SocketEvents GetSocketEvents(int16_t filter, uint16_t flags)
     return (SocketEvents)events;
 }
 
-static int32_t CreateSocketEventPortInner(int32_t* port)
+static int32_t CreateSocketEventPortInner(intptr_t* port)
 {
     assert(port != NULL);
 
@@ -2822,14 +2837,15 @@ static int32_t CreateSocketEventPortInner(int32_t* port)
     return Error_SUCCESS;
 }
 
-static int32_t CloseSocketEventPortInner(int32_t port)
+static int32_t CloseSocketEventPortInner(intptr_t port)
 {
-    int err = close(port);
+    int fd = ToFileDescriptor(port);
+    int err = close(fd);
     return err == 0 || (err < 0 && errno == EINTR) ? Error_SUCCESS : SystemNative_ConvertErrorPlatformToPal(errno);
 }
 
 static int32_t TryChangeSocketEventRegistrationInner(
-    int32_t port, int32_t socket, SocketEvents currentEvents, SocketEvents newEvents, uintptr_t data)
+    intptr_t port, int32_t socket, SocketEvents currentEvents, SocketEvents newEvents, uintptr_t data)
 {
 #ifdef EV_RECEIPT
     const uint16_t AddFlags = EV_ADD | EV_CLEAR | EV_RECEIPT;
@@ -2841,6 +2857,7 @@ static int32_t TryChangeSocketEventRegistrationInner(
 
     assert(currentEvents != newEvents);
 
+    int fd = ToFileDescriptor(port);
     int32_t changes = currentEvents ^ newEvents;
     int8_t readChanged = (changes & SocketEvents_SA_READ) != 0;
     int8_t writeChanged = (changes & SocketEvents_SA_WRITE) != 0;
@@ -2864,7 +2881,7 @@ static int32_t TryChangeSocketEventRegistrationInner(
         // As a workaround use separate kevent() calls.
         if (writeChanged)
         {
-            while ((err = kevent(port, events, GetKeventNchanges(i), NULL, 0, NULL)) < 0 && errno == EINTR);
+            while ((err = kevent(fd, events, GetKeventNchanges(i), NULL, 0, NULL)) < 0 && errno == EINTR);
             if (err != 0)
             {
                 return SystemNative_ConvertErrorPlatformToPal(errno);
@@ -2885,19 +2902,20 @@ static int32_t TryChangeSocketEventRegistrationInner(
                GetKeventUdata(data));
     }
 
-    while ((err = kevent(port, events, GetKeventNchanges(i), NULL, 0, NULL)) < 0 && errno == EINTR);
+    while ((err = kevent(fd, events, GetKeventNchanges(i), NULL, 0, NULL)) < 0 && errno == EINTR);
     return err == 0 ? Error_SUCCESS : SystemNative_ConvertErrorPlatformToPal(errno);
 }
 
-static int32_t WaitForSocketEventsInner(int32_t port, SocketEvent* buffer, int32_t* count)
+static int32_t WaitForSocketEventsInner(intptr_t port, SocketEvent* buffer, int32_t* count)
 {
     assert(buffer != NULL);
     assert(count != NULL);
     assert(*count >= 0);
 
+    int fd = ToFileDescriptor(port);
     struct kevent* events = (struct kevent*)buffer;
     int numEvents;
-    while ((numEvents = kevent(port, NULL, 0, events, GetKeventNchanges(*count), NULL)) < 0 && errno == EINTR);
+    while ((numEvents = kevent(fd, NULL, 0, events, GetKeventNchanges(*count), NULL)) < 0 && errno == EINTR);
     if (numEvents == -1)
     {
         *count = -1;
@@ -2925,29 +2943,318 @@ static int32_t WaitForSocketEventsInner(int32_t port, SocketEvent* buffer, int32
 }
 
 #else
-static const size_t SocketEventBufferElementSize = 0;
+static const size_t SocketEventBufferElementSize = sizeof(SocketEvent);
 
-static SocketEvents GetSocketEvents(int16_t filter, uint16_t flags)
+static int GetSocketEvents(uint32_t events)
 {
-    return SocketEvents_SA_NONE;
+    int asyncEvents = (((events & POLLIN) != 0) ? SocketEvents_SA_READ : 0) | (((events & POLLOUT) != 0) ? SocketEvents_SA_WRITE : 0) |
+                      (((events & POLLHUP) != 0) ? SocketEvents_SA_CLOSE : 0) | (((events & POLLERR) != 0) ? SocketEvents_SA_ERROR : 0);
+
+    return asyncEvents;
 }
-static int32_t CloseSocketEventPortInner(int32_t port)
+
+static uint32_t GetPollEvents(SocketEvents events)
 {
-    return Error_ENOSYS;
+    return (((events & SocketEvents_SA_READ) != 0) ? POLLIN : 0) | (((events & SocketEvents_SA_WRITE) != 0) ? POLLOUT : 0) |
+           (((events & SocketEvents_SA_CLOSE) != 0) ? POLLHUP : 0) | (((events & SocketEvents_SA_ERROR) != 0) ? POLLERR : 0);
 }
-static int32_t CreateSocketEventPortInner(int32_t* port)
+
+typedef struct
 {
-    return Error_ENOSYS;
+    pthread_mutex_t Lock;
+    pthread_cond_t Cond;
+    size_t Count;
+    size_t Capacity;
+    struct pollfd* Fds;
+    uintptr_t* Data;
+} SocketEventPort;
+
+static const size_t SocketEventPortInitialCapacity = 16;
+
+static int32_t CloseSocketEventPortInner(intptr_t port)
+{
+    SocketEventPort* sep = (SocketEventPort*)port;
+    if (sep == NULL)
+    {
+        return Error_EFAULT;
+    }
+    int error = pthread_mutex_destroy(&sep->Lock);
+    if (error != 0)
+    {
+        return SystemNative_ConvertErrorPlatformToPal(error);
+    }
+    error = pthread_cond_destroy(&sep->Cond);
+    assert(error == 0);
+    free(sep->Fds);
+    free(sep->Data);
+    free(sep);
+    return Error_SUCCESS;
 }
+
+static int32_t CreateSocketEventPortInner(intptr_t* port)
+{
+    SocketEventPort* sep = (SocketEventPort*)malloc(sizeof(SocketEventPort));
+    if (sep == NULL)
+    {
+        return Error_ENOMEM;
+    }
+
+    sep->Count = 0;
+    sep->Capacity = SocketEventPortInitialCapacity;
+    sep->Fds = NULL;
+    sep->Data = NULL;
+    sep->Fds = (struct pollfd*)malloc(sep->Capacity * sizeof(struct pollfd));
+    sep->Data = (uintptr_t*)malloc(sep->Capacity * sizeof(uintptr_t));
+
+    if (sep->Fds == NULL || sep->Data == NULL)
+    {
+        free(sep->Fds);
+        free(sep->Data);
+        free(sep);
+        return Error_ENOMEM;
+    }
+
+    int error = pthread_mutex_init(&sep->Lock, NULL);
+    if (error != 0)
+    {
+        free(sep->Fds);
+        free(sep->Data);
+        free(sep);
+        return SystemNative_ConvertErrorPlatformToPal(error);
+    }
+
+    error = pthread_cond_init(&sep->Cond, NULL);
+    if (error != 0)
+    {
+        pthread_mutex_destroy(&sep->Lock);
+        free(sep->Fds);
+        free(sep->Data);
+        free(sep);
+        return SystemNative_ConvertErrorPlatformToPal(error);
+    }
+
+    *port = (intptr_t)sep;
+    return Error_SUCCESS;
+}
+
 static int32_t TryChangeSocketEventRegistrationInner(
-    int32_t port, int32_t socket, SocketEvents currentEvents, SocketEvents newEvents,
-uintptr_t data)
+    intptr_t port, int32_t socket, SocketEvents currentEvents, SocketEvents newEvents, uintptr_t data)
 {
-    return Error_ENOSYS;
+    SocketEventPort* sep = (SocketEventPort*)port;
+    if (sep == NULL)
+    {
+        return Error_EFAULT;
+    }
+
+    int error = pthread_mutex_lock(&sep->Lock);
+    if (error != 0)
+    {
+        return SystemNative_ConvertErrorPlatformToPal(error);
+    }
+
+    if (currentEvents == SocketEvents_SA_NONE)
+    {
+        if (sep->Count == sep->Capacity)
+        {
+            size_t newCapacity = sep->Capacity * 2;
+            struct pollfd* newFds = (struct pollfd*)realloc(sep->Fds, newCapacity * sizeof(struct pollfd));
+            uintptr_t* newData = (uintptr_t*)realloc(sep->Data, newCapacity * sizeof(uintptr_t));
+            if (newFds == NULL || newData == NULL)
+            {
+                if (newFds != sep->Fds)
+                {
+                    free(newFds);
+                }
+                if (newData != sep->Data)
+                {
+                    free(newData);
+                }
+                pthread_mutex_unlock(&sep->Lock);
+                return Error_ENOMEM;
+            }
+            sep->Capacity = newCapacity;
+            sep->Fds = newFds;
+            sep->Data = newData;
+        }
+
+        sep->Fds[sep->Count].fd = socket;
+        sep->Fds[sep->Count].events = GetPollEvents(newEvents);
+        sep->Data[sep->Count] = data;
+        sep->Count++;
+        pthread_cond_broadcast(&sep->Cond);
+    }
+    else if (newEvents == SocketEvents_SA_NONE)
+    {
+        for (size_t i = 0; i < sep->Count; i++)
+        {
+            if (sep->Fds[i].fd == socket)
+            {
+                sep->Count--;
+                sep->Fds[i] = sep->Fds[sep->Count];
+                sep->Data[i] = sep->Data[sep->Count];
+                break;
+            }
+        }
+    }
+    else
+    {
+        for (size_t i = 0; i < sep->Count; i++)
+        {
+            if (sep->Fds[i].fd == socket)
+            {
+                sep->Fds[i].events = GetPollEvents(newEvents);
+                sep->Data[i] = data;
+                break;
+            }
+        }
+    }
+
+    pthread_mutex_unlock(&sep->Lock);
+    return Error_SUCCESS;
 }
-static int32_t WaitForSocketEventsInner(int32_t port, SocketEvent* buffer, int32_t* count)
+
+static int32_t WaitForSocketEventsInner(intptr_t port, SocketEvent* buffer, int32_t* count)
 {
-    return Error_ENOSYS;
+    SocketEventPort* sep = (SocketEventPort*)port;
+    if (sep == NULL || buffer == NULL || count == NULL)
+    {
+        return Error_EFAULT;
+    }
+
+    if (*count < 0)
+    {
+        return Error_EINVAL;
+    }
+
+    if (*count == 0)
+    {
+        return Error_SUCCESS;
+    }
+
+    int numEvents = 0;
+    struct pollfd* currentFds = NULL;
+    uintptr_t* currentData = NULL;
+    size_t currentCount;
+
+    while (numEvents == 0)
+    {
+        int error = pthread_mutex_lock(&sep->Lock);
+        if (error != 0)
+        {
+            return SystemNative_ConvertErrorPlatformToPal(error);
+        }
+
+        currentCount = sep->Count;
+
+        while (currentCount == 0)
+        {
+            error = pthread_cond_wait(&sep->Cond, &sep->Lock);
+            assert(error == 0);
+            currentCount = sep->Count;
+        }
+
+        struct pollfd* newFds = (struct pollfd*)realloc(currentFds, currentCount * sizeof(struct pollfd));
+        uintptr_t* newData = (uintptr_t*)realloc(currentData, currentCount * sizeof(uintptr_t));
+        if (newFds == NULL || newData == NULL)
+        {
+            free(currentFds);
+            free(currentData);
+            free(newFds);
+            free(newData);
+            currentFds = NULL;
+            currentData = NULL;
+        }
+        else
+        {
+            currentFds = newFds;
+            currentData = newData;
+            memcpy(currentFds, sep->Fds, currentCount * sizeof(struct pollfd));
+            memcpy(currentData, sep->Data, currentCount * sizeof(uintptr_t));
+        }
+
+        pthread_mutex_unlock(&sep->Lock);
+
+        if (currentFds == NULL || currentData == NULL)
+        {
+            *count = 0;
+            return Error_ENOMEM;
+        }
+
+        while ((numEvents = poll(currentFds, currentCount, -1)) == -1 && errno == EINTR);
+
+        if (numEvents == -1)
+        {
+            *count = 0;
+            free(currentFds);
+            free(currentData);
+            return SystemNative_ConvertErrorPlatformToPal(errno);
+        }
+
+        // We should never see 0 events. Given an infinite timeout, poll will never return
+        // 0 events.
+        assert(numEvents != 0);
+
+        bool mutexLocked = false;
+        for (size_t i = 0; i < currentCount; i++)
+        {
+            if (currentFds[i].revents == POLLNVAL)
+            {
+                if (!mutexLocked)
+                {
+                    error = pthread_mutex_lock(&sep->Lock);
+                    if (error != 0)
+                    {
+                        *count = 0;
+                        free(currentFds);
+                        free(currentData);
+                        return SystemNative_ConvertErrorPlatformToPal(error);
+                    }
+                    mutexLocked = true;
+                }
+
+                for (size_t j = 0; j < sep->Count; j++)
+                {
+                    if (sep->Fds[j].fd == currentFds[i].fd)
+                    {
+                        sep->Count--;
+                        sep->Fds[j] = sep->Fds[sep->Count];
+                        sep->Data[j] = sep->Data[sep->Count];
+                        break;
+                    }
+                }
+
+                numEvents--;
+
+                currentFds[i] = currentFds[currentCount - 1];
+                currentData[i] = currentData[currentCount - 1];
+                currentCount--;
+                i--;
+            }
+        }
+
+        if (mutexLocked)
+        {
+            pthread_mutex_unlock(&sep->Lock);
+        }
+    }
+
+    numEvents = (numEvents > *count) ? *count : numEvents;
+
+    for (size_t i = 0; (i < currentCount) && (*count > 0); i++)
+    {
+        if (currentFds[i].revents != 0)
+        {
+            buffer->Events = GetSocketEvents(currentFds[i].revents);
+            buffer->Data = currentData[i];
+            buffer++;
+            (*count)--;
+        }
+    }
+
+    *count = numEvents;
+    free(currentFds);
+    free(currentData);
+    return Error_SUCCESS;
 }
 
 #endif
@@ -2959,15 +3266,13 @@ int32_t SystemNative_CreateSocketEventPort(intptr_t* port)
         return Error_EFAULT;
     }
 
-    int fd;
-    int32_t error = CreateSocketEventPortInner(&fd);
-    *port = fd;
+    int32_t error = CreateSocketEventPortInner(port);
     return error;
 }
 
 int32_t SystemNative_CloseSocketEventPort(intptr_t port)
 {
-    return CloseSocketEventPortInner(ToFileDescriptor(port));
+    return CloseSocketEventPortInner(port);
 }
 
 int32_t SystemNative_CreateSocketEventBuffer(int32_t count, SocketEvent** buffer)
@@ -2996,7 +3301,6 @@ int32_t SystemNative_FreeSocketEventBuffer(SocketEvent* buffer)
 int32_t
 SystemNative_TryChangeSocketEventRegistration(intptr_t port, intptr_t socket, int32_t currentEvents, int32_t newEvents, uintptr_t data)
 {
-    int portFd = ToFileDescriptor(port);
     int socketFd = ToFileDescriptor(socket);
 
     const int32_t SupportedEvents = SocketEvents_SA_READ | SocketEvents_SA_WRITE | SocketEvents_SA_READCLOSE | SocketEvents_SA_CLOSE | SocketEvents_SA_ERROR;
@@ -3012,7 +3316,7 @@ SystemNative_TryChangeSocketEventRegistration(intptr_t port, intptr_t socket, in
     }
 
     return TryChangeSocketEventRegistrationInner(
-        portFd, socketFd, (SocketEvents)currentEvents, (SocketEvents)newEvents, data);
+        port, socketFd, (SocketEvents)currentEvents, (SocketEvents)newEvents, data);
 }
 
 int32_t SystemNative_WaitForSocketEvents(intptr_t port, SocketEvent* buffer, int32_t* count)
@@ -3022,9 +3326,7 @@ int32_t SystemNative_WaitForSocketEvents(intptr_t port, SocketEvent* buffer, int
         return Error_EFAULT;
     }
 
-    int fd = ToFileDescriptor(port);
-
-    return WaitForSocketEventsInner(fd, buffer, count);
+    return WaitForSocketEventsInner(port, buffer, count);
 }
 
 int32_t SystemNative_PlatformSupportsDualModeIPv4PacketInfo(void)

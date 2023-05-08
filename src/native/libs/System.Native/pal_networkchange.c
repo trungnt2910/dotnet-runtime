@@ -180,3 +180,14 @@ Error SystemNative_ReadEvents(intptr_t sock, NetworkChangeEvent onNetworkChange)
     return Error_SUCCESS;
 }
 #endif
+
+// Normally not called but included for export symbol consistency.
+Error SystemNative_DestroyNetworkChangeListener(intptr_t socket)
+{
+    int sock = ToFileDescriptor(socket);
+    if (close(sock) == 1)
+    {
+        return (Error)(SystemNative_ConvertErrorPlatformToPal(errno));
+    }
+    return Error_SUCCESS;
+}
