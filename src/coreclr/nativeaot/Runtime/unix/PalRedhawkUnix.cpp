@@ -32,7 +32,6 @@
 #include <sched.h>
 #include <sys/mman.h>
 #include <sys/types.h>
-#include <sys/syscall.h>
 #include <dlfcn.h>
 #include <dirent.h>
 #include <string.h>
@@ -42,6 +41,10 @@
 #include <sys/time.h>
 #include <cstdarg>
 #include <signal.h>
+
+#ifdef TARGET_LINUX
+#include <sys/syscall.h>
+#endif
 
 #if HAVE_PTHREAD_GETTHREADID_NP
 #include <pthread_np.h>
@@ -58,6 +61,10 @@
 #ifdef TARGET_APPLE
 #include <minipal/getexepath.h>
 #include <mach-o/getsect.h>
+#endif
+
+#ifdef TARGET_HAIKU
+#include <OS.h>
 #endif
 
 using std::nullptr_t;
@@ -1242,6 +1249,8 @@ extern "C" uint64_t PalGetCurrentOSThreadId()
     return (uint64_t)pthread_getthreadid_np();
 #elif HAVE_LWP_SELF
     return (uint64_t)_lwp_self();
+#elif defined(__HAIKU__)
+    return (uint64_t)find_thread(NULL);
 #else
     // Fallback in case we don't know how to get integer thread id on the current platform
     return (uint64_t)pthread_self();
