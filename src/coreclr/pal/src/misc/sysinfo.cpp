@@ -73,6 +73,11 @@ Revision History:
 #include <mach/mach_host.h>
 #endif // defined(TARGET_OSX)
 
+#ifdef __HAIKU__
+#include <OS.h>
+#endif // __HAIKU__
+
+#if HAVE_SYS_USER_H
 // On some platforms sys/user.h ends up defining _DEBUG; if so
 // remove the definition before including the header and put
 // back our definition afterwards
@@ -85,6 +90,7 @@ Revision History:
 #undef _DEBUG
 #define _DEBUG OLD_DEBUG
 #undef OLD_DEBUG
+#endif
 #endif
 
 #include "pal/dbgmsg.h"
@@ -223,6 +229,8 @@ GetSystemInfo(
     lpSystemInfo->lpMaximumApplicationAddress = (PVOID) (1ull << 47);
 #elif defined(__sun)
     lpSystemInfo->lpMaximumApplicationAddress = (PVOID) 0xfffffd7fffe00000ul;
+#elif defined(__HAIKU__)
+    lpSystemInfo->lpMaximumApplicationAddress = (PVOID) 0x7fffffe00000ul;
 #elif defined(USERLIMIT)
     lpSystemInfo->lpMaximumApplicationAddress = (PVOID) USERLIMIT;
 #elif defined(HOST_64BIT)
@@ -267,7 +275,7 @@ static uint64_t GetMemorySizeMultiplier(char units)
     return 1;
 }
 
-#ifndef __APPLE__
+#if !defined(__APPLE__) && !defined(__HAIKU__)
 // Try to read the MemAvailable entry from /proc/meminfo.
 // Return true if the /proc/meminfo existed, the entry was present and we were able to parse it.
 static bool ReadMemAvailable(uint64_t* memAvailable)
@@ -300,7 +308,7 @@ static bool ReadMemAvailable(uint64_t* memAvailable)
 
     return foundMemAvailable;
 }
-#endif // __APPLE__
+#endif // !defined(__APPLE__) && !defined(__HAIKU__)
 
 /*++
 Function:
@@ -425,13 +433,47 @@ GlobalMemoryStatusEx(
         lpBuffer->ullAvailPageFile *= info.mem_unit;
 #endif // HAVE_SYSINFO_WITH_MEM_UNIT
     }
-#endif // HAVE_SYSINFO
+#elif defined(__HAIKU__)
+    // Haiku
+    system_info info;
+    rc = get_system_info(&info);
+    if (rc == B_OK)
+    {
+        lpBuffer->ullTotalPageFile = info.max_swap_pages * B_PAGE_SIZE;
+        lpBuffer->ullAvailPageFile = info.free_swap_pages * B_PAGE_SIZE;
+    }
+#endif // HAVE_XSW_USAGE
 
     // Get the physical memory in use - from it, we can get the physical memory available.
     // We do this only when we have the total physical memory available.
     if (lpBuffer->ullTotalPhys > 0)
     {
-#ifndef __APPLE__
+#ifdef __APPLE__
+        vm_size_t page_size;
+        mach_port_t mach_port;
+        mach_msg_type_number_t count;
+        vm_statistics_data_t vm_stats;
+        mach_port = mach_host_self();
+        count = sizeof(vm_stats) / sizeof(natural_t);
+        if (KERN_SUCCESS == host_page_size(mach_port, &page_size))
+        {
+            if (KERN_SUCCESS == host_statistics(mach_port, HOST_VM_INFO, (host_info_t)&vm_stats, &count))
+            {
+                lpBuffer->ullAvailPhys = (int64_t)vm_stats.free_count * (int64_t)page_size;
+                INT64 used_memory = ((INT64)vm_stats.active_count + (INT64)vm_stats.inactive_count + (INT64)vm_stats.wire_count) *  (INT64)page_size;
+                lpBuffer->dwMemoryLoad = (DWORD)((used_memory * 100) / lpBuffer->ullTotalPhys);
+            }
+        }
+        mach_port_deallocate(mach_task_self(), mach_port);
+#elif defined(__HAIKU__)
+        // Reuse the system_info structure obtained above.
+        if (rc == B_OK)
+        {
+            lpBuffer->ullAvailPhys = info.free_memory;
+            INT64 used_memory = lpBuffer->ullTotalPhys - lpBuffer->ullAvailPhys;
+            lpBuffer->dwMemoryLoad = (DWORD)((used_memory * 100) / lpBuffer->ullTotalPhys);
+        }
+#else // __APPLE__
         static volatile bool tryReadMemInfo = true;
 
         if (tryReadMemInfo)
@@ -450,23 +492,6 @@ GlobalMemoryStatusEx(
 
         INT64 used_memory = lpBuffer->ullTotalPhys - lpBuffer->ullAvailPhys;
         lpBuffer->dwMemoryLoad = (DWORD)((used_memory * 100) / lpBuffer->ullTotalPhys);
-#else
-        vm_size_t page_size;
-        mach_port_t mach_port;
-        mach_msg_type_number_t count;
-        vm_statistics_data_t vm_stats;
-        mach_port = mach_host_self();
-        count = sizeof(vm_stats) / sizeof(natural_t);
-        if (KERN_SUCCESS == host_page_size(mach_port, &page_size))
-        {
-            if (KERN_SUCCESS == host_statistics(mach_port, HOST_VM_INFO, (host_info_t)&vm_stats, &count))
-            {
-                lpBuffer->ullAvailPhys = (int64_t)vm_stats.free_count * (int64_t)page_size;
-                INT64 used_memory = ((INT64)vm_stats.active_count + (INT64)vm_stats.inactive_count + (INT64)vm_stats.wire_count) *  (INT64)page_size;
-                lpBuffer->dwMemoryLoad = (DWORD)((used_memory * 100) / lpBuffer->ullTotalPhys);
-            }
-        }
-        mach_port_deallocate(mach_task_self(), mach_port);
 #endif // __APPLE__
     }
 

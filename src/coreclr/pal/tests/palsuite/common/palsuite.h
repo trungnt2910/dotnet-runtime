@@ -23,6 +23,7 @@ typedef unsigned short char16_t;
 #include <pal_assert.h>
 #include <pal.h>
 #include <palprivate.h>
+#include <minipal/errno.h>
 #include <minipal/utils.h>
 #include <minipal/types.h>
 
