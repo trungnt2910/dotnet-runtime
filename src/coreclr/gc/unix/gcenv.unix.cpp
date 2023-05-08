@@ -91,6 +91,10 @@ extern "C"
 
 #endif // __APPLE__
 
+#ifdef __HAIKU__
+#include <OS.h>
+#endif // __HAIKU__
+
 #ifdef __linux__
 #include <sys/syscall.h> // __NR_membarrier
 // Ensure __NR_membarrier is defined for portable builds.
@@ -516,7 +520,11 @@ static void* VirtualReserveInner(size_t size, size_t alignment, uint32_t flags, 
     }
 
     size_t alignedSize = size + (alignment - OS_PAGE_SIZE);
-    void * pRetVal = mmap(nullptr, alignedSize, PROT_NONE, MAP_ANON | MAP_PRIVATE | hugePagesFlag, -1, 0);
+    int mmapFlags = MAP_ANON | MAP_PRIVATE | hugePagesFlag;
+#ifdef __HAIKU__
+    mmapFlags |= MAP_NORESERVE;
+#endif
+    void * pRetVal = mmap(nullptr, alignedSize, PROT_NONE, mmapFlags, -1, 0);
 
     if (pRetVal != MAP_FAILED)
     {
@@ -650,7 +658,11 @@ bool GCToOSInterface::VirtualDecommit(void* address, size_t size)
     // that much more clear to the operating system that we no
     // longer need these pages. Also, GC depends on re-committed pages to
     // be zeroed-out.
-    bool bRetVal = mmap(address, size, PROT_NONE, MAP_FIXED | MAP_ANON | MAP_PRIVATE, -1, 0) != MAP_FAILED;
+    int mmapFlags = MAP_FIXED | MAP_ANON | MAP_PRIVATE;
+#ifdef TARGET_HAIKU
+    mmapFlags |= MAP_NORESERVE;
+#endif
+    bool bRetVal = mmap(address, size, PROT_NONE, mmapFlags, -1, 0) != MAP_FAILED;
 
 #ifdef MADV_DONTDUMP
     if (bRetVal)
@@ -944,7 +956,7 @@ static uint64_t GetMemorySizeMultiplier(char units)
     return 1;
 }
 
-#ifndef __APPLE__
+#if !defined(__APPLE__) && !defined(__HAIKU__)
 // Try to read the MemAvailable entry from /proc/meminfo.
 // Return true if the /proc/meminfo existed, the entry was present and we were able to parse it.
 static bool ReadMemAvailable(uint64_t* memAvailable)
@@ -977,7 +989,7 @@ static bool ReadMemAvailable(uint64_t* memAvailable)
 
     return foundMemAvailable;
 }
-#endif // __APPLE__
+#endif // !defined(__APPLE__) && !defined(__HAIKU__)
 
 // Get size of the largest cache on the processor die
 // Parameters:
@@ -1160,7 +1172,28 @@ uint64_t GetAvailablePhysicalMemory()
     uint64_t available = 0;
 
     // Get the physical memory available.
-#ifndef __APPLE__
+#ifdef __APPLE__
+    vm_size_t page_size;
+    mach_port_t mach_port;
+    mach_msg_type_number_t count;
+    vm_statistics_data_t vm_stats;
+    mach_port = mach_host_self();
+    count = sizeof(vm_stats) / sizeof(natural_t);
+    if (KERN_SUCCESS == host_page_size(mach_port, &page_size))
+    {
+        if (KERN_SUCCESS == host_statistics(mach_port, HOST_VM_INFO, (host_info_t)&vm_stats, &count))
+        {
+            available = (int64_t)vm_stats.free_count * (int64_t)page_size;
+        }
+    }
+    mach_port_deallocate(mach_task_self(), mach_port);
+#elif defined(__HAIKU__)
+    system_info info;
+    if (get_system_info(&info) == B_OK)
+    {
+        available = info.free_memory;
+    }
+#else // __APPLE__
     static volatile bool tryReadMemInfo = true;
 
     if (tryReadMemInfo)
@@ -1176,21 +1209,6 @@ uint64_t GetAvailablePhysicalMemory()
         // Fall back to getting the available pages using sysconf.
         available = sysconf(SYSCONF_PAGES) * sysconf(_SC_PAGE_SIZE);
     }
-#else // __APPLE__
-    vm_size_t page_size;
-    mach_port_t mach_port;
-    mach_msg_type_number_t count;
-    vm_statistics_data_t vm_stats;
-    mach_port = mach_host_self();
-    count = sizeof(vm_stats) / sizeof(natural_t);
-    if (KERN_SUCCESS == host_page_size(mach_port, &page_size))
-    {
-        if (KERN_SUCCESS == host_statistics(mach_port, HOST_VM_INFO, (host_info_t)&vm_stats, &count))
-        {
-            available = (int64_t)vm_stats.free_count * (int64_t)page_size;
-        }
-    }
-    mach_port_deallocate(mach_task_self(), mach_port);
 #endif // __APPLE__
 
     return available;
