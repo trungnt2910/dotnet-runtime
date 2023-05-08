@@ -9,8 +9,11 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <string.h>
-#include <sys/syscall.h>
 #include <minipal/utils.h>
+
+#ifdef TARGET_LINUX
+#include <sys/syscall.h>
+#endif
 
 // The highest NUMA node available
 int g_highestNumaNode = 0;
