@@ -6,7 +6,7 @@
 ** Source: pal_errno.c
 **
 ** Purpose: Positive test the PAL_errno API.
-**          call PAL_errno to retrieve the pointer to 
+**          call PAL_errno to retrieve the pointer to
 **          the per-thread errno value.
 **
 **
@@ -24,10 +24,10 @@ PALTEST(pal_specific_PAL_errno_test1_paltest_pal_errno_test1, "pal_specific/PAL_
     {
         return FAIL;
     }
-    
+
     /*Try to open a not-exist file to read to generate an error*/
     pFile = fopen( "no_exist_file_name", "r" );
-    
+
     if( NULL != pFile )
     {
         Trace("\nFailed to call fopen to open a not exist for reading, "
@@ -41,12 +41,12 @@ PALTEST(pal_specific_PAL_errno_test1_paltest_pal_errno_test1, "pal_specific/PAL_
     }
 
     /*retrieve the per-thread error value pointer*/
-    if( 2 != errno )
+    if( ENOENT != errno )
     {
         Fail("\nFailed to call PAL_errno API, this value is not correct."
              " The correct value is ENOENT[2] ( No such file or directory.).\n");
     }
-    
+
     PAL_Terminate();
     return PASS;
 }

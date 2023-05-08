@@ -635,6 +635,11 @@ int32_t SystemNative_GetDomainName(uint8_t* name, int32_t nameLength)
     // Copy the domain name
     SafeStringCopy((char*)name, namelen, uts.domainname);
     return 0;
+#elif defined(__HAIKU__)
+    // Haiku does not support NIS domains.
+    (void)nameLength;
+    *name = '\0';
+    return 0;
 #else
     // GetDomainName is not supported on this platform.
     errno = ENOTSUP;
@@ -1876,10 +1881,13 @@ static bool TryGetPlatformSocketOption(int32_t socketOptionLevel, int32_t socket
 
                 // case SocketOptionName_SO_TCP_BSDURGENT:
 
+#ifdef TCP_KEEPCNT
                 case SocketOptionName_SO_TCP_KEEPALIVE_RETRYCOUNT:
                     *optName = TCP_KEEPCNT;
                     return true;
+#endif
 
+#if defined(TCP_KEEPALIVE) || defined(TCP_KEEPIDLE)
                 case SocketOptionName_SO_TCP_KEEPALIVE_TIME:
                     *optName =
                     #if HAVE_TCP_H_TCP_KEEPALIVE
@@ -1888,10 +1896,13 @@ static bool TryGetPlatformSocketOption(int32_t socketOptionLevel, int32_t socket
                         TCP_KEEPIDLE;
                     #endif
                     return true;
+#endif
 
+#ifdef TCP_KEEPINTVL
                 case SocketOptionName_SO_TCP_KEEPALIVE_INTERVAL:
                     *optName = TCP_KEEPINTVL;
                     return true;
+#endif
 
                 default:
                     return false;
