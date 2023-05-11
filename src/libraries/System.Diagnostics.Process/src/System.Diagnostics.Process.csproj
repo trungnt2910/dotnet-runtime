@@ -2,7 +2,7 @@
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);FEATURE_REGISTRY</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <TargetFrameworks>$(NetCoreAppCurrent)-windows;$(NetCoreAppCurrent)-freebsd;$(NetCoreAppCurrent)-linux;$(NetCoreAppCurrent)-osx;$(NetCoreAppCurrent)-maccatalyst;$(NetCoreAppCurrent)-ios;$(NetCoreAppCurrent)-tvos;$(NetCoreAppCurrent)</TargetFrameworks>
+    <TargetFrameworks>$(NetCoreAppCurrent)-windows;$(NetCoreAppCurrent)-freebsd;$(NetCoreAppCurrent)-haiku;$(NetCoreAppCurrent)-linux;$(NetCoreAppCurrent)-osx;$(NetCoreAppCurrent)-maccatalyst;$(NetCoreAppCurrent)-ios;$(NetCoreAppCurrent)-tvos;$(NetCoreAppCurrent)</TargetFrameworks>
   </PropertyGroup>
   <!-- DesignTimeBuild requires all the TargetFramework Derived Properties to not be present in the first property group. -->
   <PropertyGroup>
@@ -342,6 +342,17 @@
              Link="Common\Interop\FreeBSD\Interop.Process.cs" />
     <Compile Include="$(CommonPath)Interop\FreeBSD\Interop.Process.GetProcInfo.cs"
              Link="Common\Interop\FreeBSD\Interop.Process.GetProcInfo.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'haiku'">
+    <Compile Include="System\Diagnostics\Process.Haiku.cs" />
+    <Compile Include="System\Diagnostics\ProcessManager.Haiku.cs" />
+    <Compile Include="System\Diagnostics\ProcessThread.Haiku.cs" />
+    <Compile Include="$(CommonPath)Interop\Haiku\Interop.Image.cs"
+             Link="Common\Interop\Haiku\Interop.Image.cs" />
+    <Compile Include="$(CommonPath)Interop\Haiku\Interop.Libraries.cs"
+             Link="Common\Interop\Haiku\Interop.Libraries.cs" />
+    <Compile Include="$(CommonPath)Interop\Haiku\Interop.OS.cs"
+             Link="Common\Interop\Haiku\Interop.OS.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'ios' or '$(TargetPlatformIdentifier)' == 'tvos'">
     <Compile Include="System\Diagnostics\Process.iOS.cs" />
