@@ -22,11 +22,6 @@ namespace System.Net
             try
             {
                 Interop.Error result = Interop.Sys.Socket(af, SocketType.Dgram, 0, &socket);
-                if (result != Interop.Error.EAFNOSUPPORT || result != Interop.Error.EPROTONOSUPPORT)
-                {
-                    // If SOCK_DGRAM is not supported, try SOCK_STREAM instead. Some OSes (Haiku) supports AF_UNIX but only implements SOCK_STREAM.
-                    result = Interop.Sys.Socket(af, SocketType.Stream, 0, &socket);
-                }
                 // we get EAFNOSUPPORT when family is not supported by Kernel, EPROTONOSUPPORT may come from policy enforcement like FreeBSD jail()
                 return result != Interop.Error.EAFNOSUPPORT && result != Interop.Error.EPROTONOSUPPORT;
             }

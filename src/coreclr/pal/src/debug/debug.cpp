@@ -63,6 +63,10 @@ SET_DEFAULT_DEBUG_CHANNEL(DEBUG); // some headers have code with asserts, so do 
 #include <mach/mach_vm.h>
 #endif // __APPLE__
 
+#ifdef __HAIKU__
+#include <sys/mman.h>
+#endif // __HAIKU__
+
 #if HAVE_MACH_EXCEPTIONS
 #include "../exception/machexception.h"
 #endif // HAVE_MACH_EXCEPTIONS
@@ -577,6 +581,8 @@ PAL_OpenProcessMemory(
         return FALSE;
     }
     *pHandle = port;
+#elif defined(__HAIKU__)
+    *pHandle = processId;
 #else
     char memPath[128];
     _snprintf_s(memPath, sizeof(memPath), sizeof(memPath), "/proc/%lu/mem", processId);
@@ -708,6 +714,34 @@ PAL_ReadProcessMemory(
     {
         free(data);
     }
+#elif defined(__HAIKU__)
+    const size_t pageSize = GetVirtualPageSize();
+    ULONG64 addressAligned = ALIGN_DOWN(address, pageSize);
+    ssize_t offset = OffsetWithinPage(address);
+    ssize_t bytesLeft = size;
+
+    while (bytesLeft > 0)
+    {
+        void* page = mmap(NULL, pageSize, PROT_READ, MAP_PRIVATE | MAP_REMAP, handle, (off_t)addressAligned);
+        if (page == MAP_FAILED)
+        {
+            TRACE("PAL_ReadProcessMemory(%p %d): mmap failed bytesLeft %d from %p: %d %s\n",
+                (void*)address, size, bytesLeft, (void*)addressAligned, errno, strerror(errno));
+            break;
+        }
+        ssize_t bytesToCopy = pageSize - offset;
+        if (bytesToCopy > bytesLeft)
+        {
+            bytesToCopy = bytesLeft;
+        }
+        memcpy((LPSTR)buffer + read, (LPSTR)page + offset, bytesToCopy);
+        munmap(page, pageSize);
+        addressAligned = addressAligned + pageSize;
+        read += bytesToCopy;
+        bytesLeft -= bytesToCopy;
+        offset = 0;
+    }
+    result = size == 0 || read > 0;
 #else
     read = pread(handle, buffer, size, address);
     if (read == (size_t)-1)

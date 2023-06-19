@@ -37,7 +37,7 @@ bool IsProcessTranslated()
 }
 #endif // TARGET_OSX && TARGET_AMD64
 
-#ifndef TARGET_OSX
+#if !defined(TARGET_OSX) && !defined(TARGET_HAIKU)
 
 #ifdef TARGET_64BIT
 static const off_t MaxDoubleMappedSize = 2048ULL*1024*1024*1024;
@@ -45,11 +45,11 @@ static const off_t MaxDoubleMappedSize = 2048ULL*1024*1024*1024;
 static const off_t MaxDoubleMappedSize = UINT_MAX;
 #endif
 
-#endif // TARGET_OSX
+#endif // !TARGET_OSX && !TARGET_HAIKU
 
 bool VMToOSInterface::CreateDoubleMemoryMapper(void** pHandle, size_t *pMaxExecutableCodeSize)
 {
-#ifndef TARGET_OSX
+#if !defined(TARGET_OSX) && !defined(TARGET_HAIKU)
 
 #ifdef TARGET_FREEBSD
     int fd = shm_open(SHM_ANON, O_RDWR | O_CREAT, S_IRWXU);
@@ -86,26 +86,26 @@ bool VMToOSInterface::CreateDoubleMemoryMapper(void** pHandle, size_t *pMaxExecu
 
     *pMaxExecutableCodeSize = MaxDoubleMappedSize;
     *pHandle = (void*)(size_t)fd;
-#else // !TARGET_OSX
+#else // !TARGET_OSX && !TARGET_HAIKU
 
-#ifdef TARGET_AMD64
+#if defined(TARGET_OSX) && defined(TARGET_AMD64)
     if (IsProcessTranslated())
     {
         // Rosetta doesn't support double mapping correctly
         return false;
     }
-#endif // TARGET_AMD64
+#endif // TARGET_OSX && TARGET_AMD64
 
     *pMaxExecutableCodeSize = SIZE_MAX;
     *pHandle = NULL;
-#endif // !TARGET_OSX
+#endif // !TARGET_OSX && !TARGET_HAIKU
 
     return true;
 }
 
 void VMToOSInterface::DestroyDoubleMemoryMapper(void *mapperHandle)
 {
-#ifndef TARGET_OSX
+#if !defined(TARGET_OSX) && !defined(TARGET_HAIKU)
     close((int)(size_t)mapperHandle);
 #endif
 }
@@ -157,11 +157,8 @@ void* VMToOSInterface::ReserveDoubleMappedMemory(void *mapperHandle, size_t offs
     }
 
     void* result = PAL_VirtualReserveFromExecutableMemoryAllocatorWithinRange(rangeStart, rangeEnd, size, 0 /* fStoreAllocationInfo */);
-#ifndef TARGET_OSX
+#if !defined(TARGET_OSX) && !defined(TARGET_HAIKU)
     int mmapFlags = MAP_SHARED;
-#ifdef TARGET_HAIKU
-    mmapFlags |= MAP_NORESERVE;
-#endif // TARGET_HAIKU
     if (result != NULL)
     {
         // Map the shared memory over the range reserved from the executable memory allocator.
@@ -172,7 +169,7 @@ void* VMToOSInterface::ReserveDoubleMappedMemory(void *mapperHandle, size_t offs
             result = NULL;
         }
     }
-#endif // TARGET_OSX
+#endif // !TARGET_OSX && !TARGET_HAIKU
 
     // For requests with limited range, don't try to fall back to reserving at any address
     if ((result != NULL) || !isUnlimitedRange)
@@ -180,16 +177,18 @@ void* VMToOSInterface::ReserveDoubleMappedMemory(void *mapperHandle, size_t offs
         return result;
     }
 
-#ifndef TARGET_OSX
+#if !defined(TARGET_OSX) && !defined(TARGET_HAIKU)
     result = mmap(NULL, size, PROT_NONE, mmapFlags, fd, offset);
-#else
+#elif defined(TARGET_OSX)
     int mmapFlags = MAP_ANON | MAP_PRIVATE;
     if (IsMapJitFlagNeeded())
     {
         mmapFlags |= MAP_JIT;
     }
     result = mmap(NULL, size, PROT_NONE, mmapFlags, -1, 0);
-#endif
+#elif defined(TARGET_HAIKU)
+    result = mmap(NULL, size, PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_NORESERVE, -1, 0);
+#endif // !TARGET_OSX && !TARGET_HAIKU
     if (result == MAP_FAILED)
     {
         assert(false);
@@ -200,30 +199,37 @@ void* VMToOSInterface::ReserveDoubleMappedMemory(void *mapperHandle, size_t offs
 
 void *VMToOSInterface::CommitDoubleMappedMemory(void* pStart, size_t size, bool isExecutable)
 {
+#ifndef TARGET_HAIKU
     if (mprotect(pStart, size, isExecutable ? (PROT_READ | PROT_EXEC) : (PROT_READ | PROT_WRITE)) == -1)
     {
         return NULL;
     }
-
+#else // TARGET_HAIKU
+    if (mmap(pStart, size, isExecutable ? (PROT_READ | PROT_EXEC) : (PROT_READ | PROT_WRITE),
+             MAP_PRIVATE | MAP_FIXED | MAP_REMAP, 0, (off_t)pStart) == MAP_FAILED)
+    {
+        return NULL;
+    }
+#endif // !TARGET_HAIKU
     return pStart;
 }
 
 bool VMToOSInterface::ReleaseDoubleMappedMemory(void *mapperHandle, void* pStart, size_t offset, size_t size)
 {
-#ifndef TARGET_OSX
+#if !defined(TARGET_OSX) && !defined(TARGET_HAIKU)
     int fd = (int)(size_t)mapperHandle;
     if (mmap(pStart, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, fd, offset) == MAP_FAILED)
     {
         return false;
     }
     memset(pStart, 0, size);
-#endif // TARGET_OSX
+#endif // !TARGET_OSX && !TARGET_HAIKU
     return munmap(pStart, size) != -1;
 }
 
 void* VMToOSInterface::GetRWMapping(void *mapperHandle, void* pStart, size_t offset, size_t size)
 {
-#ifndef TARGET_OSX
+#if !defined(TARGET_OSX) && !defined(TARGET_HAIKU)
     int fd = (int)(size_t)mapperHandle;
     void* result = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, offset);
     if (result == MAP_FAILED)
@@ -231,7 +237,7 @@ void* VMToOSInterface::GetRWMapping(void *mapperHandle, void* pStart, size_t off
         result = NULL;
     }
     return result;
-#else // TARGET_OSX
+#elif defined(TARGET_OSX)
 #ifdef TARGET_AMD64
     vm_address_t startRW;
     vm_prot_t curProtection, maxProtection;
@@ -256,7 +262,14 @@ void* VMToOSInterface::GetRWMapping(void *mapperHandle, void* pStart, size_t off
     assert(false);
     return NULL;
 #endif // TARGET_AMD64
-#endif // TARGET_OSX
+#elif defined(TARGET_HAIKU)
+    void* result = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_REMAP, 0, (off_t)pStart);
+    if (result == MAP_FAILED)
+    {
+        result = NULL;
+    }
+    return result;
+#endif // !TARGET_OSX && !TARGET_HAIKU
 }
 
 bool VMToOSInterface::ReleaseRWMapping(void* pStart, size_t size)

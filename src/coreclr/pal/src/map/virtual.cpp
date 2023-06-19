@@ -761,11 +761,19 @@ VIRTUALCommitMemory(
     nProtect = W32toUnixAccessControl(flProtect);
 
     // Commit the pages
+#ifndef __HAIKU__
     if (mprotect((void *) StartBoundary, MemSize, nProtect) != 0)
     {
         ERROR("mprotect() failed! Error(%d)=%s\n", errno, strerror(errno));
         goto error;
     }
+#else
+    if (mmap((void *) StartBoundary, MemSize, nProtect, MAP_PRIVATE | MAP_FIXED | MAP_REMAP, 0, (off_t) StartBoundary) != (void *) StartBoundary)
+    {
+        ERROR("mmap() failed! Error(%d)=%s\n", errno, strerror(errno));
+        goto error;
+    }
+#endif
 
 #ifdef MADV_DODUMP
     // Include committed memory in coredump.

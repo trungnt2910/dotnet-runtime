@@ -612,7 +612,11 @@ void* GCToOSInterface::VirtualReserveAndCommitLargePages(size_t size, uint16_t n
 //  true if it has succeeded, false if it has failed
 bool GCToOSInterface::VirtualCommit(void* address, size_t size, uint16_t node)
 {
+#ifndef TARGET_HAIKU
     bool success = mprotect(address, size, PROT_WRITE | PROT_READ) == 0;
+#else
+    bool success = mmap(address, size, PROT_WRITE | PROT_READ, MAP_PRIVATE | MAP_FIXED | MAP_REMAP, 0, (off_t)address) == address;
+#endif
 
 #ifdef MADV_DODUMP
     if (success)
