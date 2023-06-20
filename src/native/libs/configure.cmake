@@ -141,9 +141,16 @@ check_symbol_exists(
     fcntl.h
     HAVE_F_FULLFSYNC)
 
+set (PREVIOUS_CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES})
+if (CLR_CMAKE_TARGET_HAIKU)
+     set(CMAKE_REQUIRED_LIBRARIES "-lnetwork")
+endif()
+
 check_function_exists(
     getifaddrs
     HAVE_GETIFADDRS)
+
+set (CMAKE_REQUIRED_LIBRARIES ${PREVIOUS_CMAKE_REQUIRED_LIBRARIES})
 
 check_symbol_exists(
     fork
@@ -942,6 +949,10 @@ check_include_files(
 check_include_files(
     "net/if.h"
     HAVE_NET_IF_H)
+
+check_include_files(
+    "sys/sockio.h"
+    HAVE_SYS_SOCKIO_H)
 
 check_include_files(
     "pthread.h"

@@ -21,5 +21,11 @@ internal static partial class Interop
 
         [LibraryImport(Libraries.SystemNative, EntryPoint = "SystemNative_ReadEvents")]
         public static unsafe partial Error ReadEvents(SafeHandle socket, delegate* unmanaged<IntPtr, NetworkChangeKind, void> onNetworkChange);
+
+        [LibraryImport(Libraries.SystemNative, EntryPoint = "SystemNative_ReadEvents")]
+        public static unsafe partial Error ReadEvents(IntPtr handle, delegate* unmanaged<IntPtr, NetworkChangeKind, void> onNetworkChange);
+
+        [LibraryImport(Libraries.SystemNative, EntryPoint = "SystemNative_DestroyNetworkChangeListener")]
+        public static partial Error DestroyNetworkChangeListener(IntPtr handle);
     }
 }

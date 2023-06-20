@@ -96,7 +96,7 @@ Error SystemNative_ReadEvents(intptr_t handle, NetworkChangeEvent onNetworkChang
 {
     auto looper = reinterpret_cast<NetworkChangeLooper*>(handle);
     looper->SetHandler(onNetworkChange);
-    if (looper->Thread() == 0)
+    if (looper->Thread() == B_ERROR)
     {
         status_t status = looper->Run();
         if (status < 0)

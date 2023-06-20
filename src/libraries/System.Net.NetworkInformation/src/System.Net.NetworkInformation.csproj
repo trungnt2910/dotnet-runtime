@@ -27,7 +27,7 @@
     <Compile Include="System\Net\NetworkInformation\MulticastIPAddressInformationCollection.cs" />
     <Compile Include="System\Net\NetworkInformation\NetBiosNodeType.cs" />
     <Compile Include="System\Net\NetworkInformation\NetEventSource.NetworkInformation.cs" />
-    <Compile Include="System\Net\NetworkInformation\NetworkAddressChange.cs" Condition="'$(TargetPlatformIdentifier)' != 'illumos' and '$(TargetPlatformIdentifier)' != 'solaris' and '$(TargetPlatformIdentifier)' != 'haiku'" />
+    <Compile Include="System\Net\NetworkInformation\NetworkAddressChange.cs" Condition="'$(TargetPlatformIdentifier)' != 'illumos' and '$(TargetPlatformIdentifier)' != 'solaris'" />
     <Compile Include="System\Net\NetworkInformation\NetworkAvailabilityEventArgs.cs" />
     <Compile Include="System\Net\NetworkInformation\NetworkChangeDelegates.cs" />
     <Compile Include="System\Net\NetworkInformation\NetworkInterface.cs" />
@@ -158,7 +158,7 @@
     <Compile Include="System\Net\NetworkInformation\NetworkAddressChange.Android.cs" />
   </ItemGroup>
   <!-- OSX -->
-  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'osx' or '$(TargetPlatformIdentifier)' == 'ios' or '$(TargetPlatformIdentifier)' == 'tvos' or '$(TargetPlatformIdentifier)' == 'freebsd'">
+  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'osx' or '$(TargetPlatformIdentifier)' == 'ios' or '$(TargetPlatformIdentifier)' == 'tvos' or '$(TargetPlatformIdentifier)' == 'freebsd' or '$(TargetPlatformIdentifier)' == 'haiku'">
     <Compile Include="System\Net\NetworkInformation\IPGlobalPropertiesPal.Bsd.cs" />
     <Compile Include="System\Net\NetworkInformation\NetworkInterfacePal.Bsd.cs" />
     <Compile Include="System\Net\NetworkInformation\BsdIcmpV4Statistics.cs" />
@@ -193,8 +193,12 @@
     <Compile Include="System\Net\NetworkInformation\NetworkAddressChange.Unix.cs" />
     <Compile Include="$(CommonPath)Interop\Unix\System.Native\Interop.NetworkChange.cs" Link="Common\Interop\Unix\System.Native\Interop.NetworkChange.cs" />
   </ItemGroup>
+  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'haiku'">
+    <Compile Include="System\Net\NetworkInformation\NetworkAddressChange.Haiku.cs" />
+    <Compile Include="$(CommonPath)Interop\Unix\System.Native\Interop.NetworkChange.cs" Link="Common\Interop\Unix\System.Native\Interop.NetworkChange.cs" />
+  </ItemGroup>
   <!-- Unknown Unix -->
-  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'illumos' or '$(TargetPlatformIdentifier)' == 'solaris' or '$(TargetPlatformIdentifier)' == 'haiku'">
+  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'illumos' or '$(TargetPlatformIdentifier)' == 'solaris'">
     <Compile Include="System\Net\NetworkInformation\IPGlobalPropertiesPal.UnknownUnix.cs" />
     <Compile Include="System\Net\NetworkInformation\NetworkInterfacePal.UnknownUnix.cs" />
     <Compile Include="System\Net\NetworkInformation\NetworkAddressChange.UnknownUnix.cs" />

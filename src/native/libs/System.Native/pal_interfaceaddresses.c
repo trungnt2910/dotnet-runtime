@@ -45,6 +45,9 @@
 #elif HAVE_IOS_NET_IFMEDIA_H
 #include "ios/net/if_media.h"
 #endif
+#if HAVE_SYS_SOCKIO_H
+#include <sys/sockio.h>
+#endif
 
 #if defined(AF_PACKET)
 #include <sys/ioctl.h>
@@ -67,6 +70,10 @@
 #else
 #include <net/route.h>
 #endif
+#endif
+
+#ifndef IFF_RUNNING
+#define IFF_RUNNING 0
 #endif
 
 // Convert mask to prefix length e.g. 255.255.255.0 -> 24
@@ -160,10 +167,14 @@ int32_t SystemNative_EnumerateInterfaceAddresses(void* context,
     }
 #endif
 
+void
+debug_printf(const char *format, ...);
+
 #if HAVE_GETIFADDRS || defined(ANDROID_GETIFADDRS_WORKAROUND)
     struct ifaddrs* headAddr;
     if (getifaddrs(&headAddr) == -1)
     {
+        debug_printf("%s:%d: getifaddrs failed with errno %s\n", __FILE__, __LINE__, strerror(errno));
         return -1;
     }
 
@@ -180,6 +191,7 @@ int32_t SystemNative_EnumerateInterfaceAddresses(void* context,
         char* result = if_indextoname(interfaceIndex, actualName);
         if (result == NULL)
         {
+            debug_printf("%s:%d: failed with errno %s\n", __FILE__, __LINE__, strerror(errno));
             freeifaddrs(headAddr);
             return -1;
         }
@@ -270,6 +282,18 @@ int32_t SystemNative_EnumerateInterfaceAddresses(void* context,
                     int fd = socket(AF_INET, SOCK_DGRAM, 0);
                     if (fd >= 0)
                     {
+struct ifmediareq {
+	char	ifm_name[IFNAMSIZ];	/* if name, e.g. "en0" */
+	int	ifm_current;		/* current media options */
+	int	ifm_mask;		/* don't care mask */
+	int	ifm_status;		/* media status */
+	int	ifm_active;		/* active options */
+	int	ifm_count;		/* # entries in ifm_ulist array */
+	int	*ifm_ulist;		/* media words */
+};
+
+
+
                         struct ifmediareq ifmr;
                         memset(&ifmr, 0, sizeof(ifmr));
                         strncpy(ifmr.ifm_name, actualName, sizeof(ifmr.ifm_name));
@@ -299,6 +323,7 @@ int32_t SystemNative_EnumerateInterfaceAddresses(void* context,
     (void)onIpv6Found;
     (void)onLinkLayerFound;
     errno = ENOTSUP;
+    debug_printf("%s:%d: failed with errno %s\n", __FILE__, __LINE__, strerror(errno));
     return -1;
 #endif
 }

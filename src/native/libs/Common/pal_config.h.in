@@ -153,6 +153,7 @@
 #cmakedefine01 HAVE_TERMIOS2
 #cmakedefine01 HAVE_DIRENT_NAME_SIZE
 #cmakedefine01 DIRENT_NAME_SIZE
+#cmakedefine01 HAVE_SYS_SOCKIO_H
 
 #ifndef HOST_WASI
 #cmakedefine01 HAVE_GETRUSAGE
