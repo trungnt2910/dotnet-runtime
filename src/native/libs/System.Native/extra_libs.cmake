@@ -9,7 +9,7 @@ macro(append_extra_system_libs NativeLibsExtra)
     elseif (CLR_CMAKE_TARGET_SUNOS)
         list(APPEND ${NativeLibsExtra} socket)
     elseif (CLR_CMAKE_TARGET_HAIKU)
-        list (APPEND ${NativeLibsExtra} network)
+        list (APPEND ${NativeLibsExtra} be bnetapi network)
     endif ()
 
     if (CLR_CMAKE_TARGET_APPLE)

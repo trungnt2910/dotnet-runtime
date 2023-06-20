@@ -19,3 +19,5 @@ typedef void (*NetworkChangeEvent)(intptr_t sock, NetworkChangeKind notification
 PALEXPORT Error SystemNative_ReadEvents(intptr_t sock, NetworkChangeEvent onNetworkChange);
 
 PALEXPORT Error SystemNative_CreateNetworkChangeListenerSocket(intptr_t* retSocket);
+
+PALEXPORT Error SystemNative_DestroyNetworkChangeListener(intptr_t listener);

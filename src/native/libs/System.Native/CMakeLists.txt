@@ -14,6 +14,10 @@ if (CLR_CMAKE_TARGET_OSX)
     add_definitions(-D_DARWIN_C_SOURCE)
 endif ()
 
+if (CLR_CMAKE_TARGET_HAIKU)
+    enable_language(CXX)
+endif ()
+
 set(NATIVE_SOURCES
     pal_errno.c
     pal_interfaceaddresses.c
@@ -99,7 +103,9 @@ else ()
         pal_iossupportversion.c)
 endif ()
 
-if (NOT CLR_CMAKE_TARGET_BROWSER AND NOT CLR_CMAKE_TARGET_WASI)
+if (CLR_CMAKE_TARGET_HAIKU)
+    list (APPEND NATIVE_SOURCES pal_networkchange_haiku.cpp)
+elseif (NOT CLR_CMAKE_TARGET_BROWSER AND NOT CLR_CMAKE_TARGET_WASI)
     list (APPEND NATIVE_SOURCES pal_networkchange.c)
 endif ()
 

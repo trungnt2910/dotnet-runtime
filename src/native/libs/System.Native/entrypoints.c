@@ -132,6 +132,7 @@ static const Entry s_sysNative[] =
     DllImportEntry(SystemNative_GetAllMountPoints)
     DllImportEntry(SystemNative_ReadEvents)
     DllImportEntry(SystemNative_CreateNetworkChangeListenerSocket)
+    DllImportEntry(SystemNative_DestroyNetworkChangeListener)
     DllImportEntry(SystemNative_GetHostEntryForName)
     DllImportEntry(SystemNative_FreeHostEntry)
     DllImportEntry(SystemNative_GetNameInfo)
