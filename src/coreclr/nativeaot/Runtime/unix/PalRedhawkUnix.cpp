@@ -32,7 +32,6 @@
 #include <sched.h>
 #include <sys/mman.h>
 #include <sys/types.h>
-#include <sys/syscall.h>
 #include <dlfcn.h>
 #include <dirent.h>
 #include <string.h>
@@ -42,6 +41,10 @@
 #include <sys/time.h>
 #include <cstdarg>
 #include <signal.h>
+
+#ifdef TARGET_LINUX
+#include <sys/syscall.h>
+#endif
 
 #if HAVE_PTHREAD_GETTHREADID_NP
 #include <pthread_np.h>
@@ -57,6 +60,10 @@
 
 #ifdef TARGET_APPLE
 #include <mach/mach.h>
+#endif
+
+#ifdef TARGET_HAIKU
+#include <OS.h>
 #endif
 
 using std::nullptr_t;
