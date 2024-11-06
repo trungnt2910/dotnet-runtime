@@ -80,6 +80,9 @@ inline uint32_t PlatformGetCurrentThreadId() {
 #elif defined(__NetBSD__)
 #include <lwp.h>
 #define PlatformGetCurrentThreadId() (uint32_t)_lwp_self()
+#elif defined(__HAIKU__)
+#include <OS.h>
+#define PlatformGetCurrentThreadId() (uint32_t)find_thread(NULL)
 #else
 #define PlatformGetCurrentThreadId() (uint32_t)pthread_self()
 #endif
