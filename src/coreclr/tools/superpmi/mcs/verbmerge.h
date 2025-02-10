@@ -20,7 +20,7 @@ struct FindData
 
     FindData() : d_type(0), cFileName(nullptr)
     {
-    }   
+    }
 
     FindData(unsigned char type, WCHAR *fileName)
     {
@@ -64,6 +64,12 @@ private:
 
 #ifdef TARGET_WINDOWS
     typedef _WIN32_FIND_DATAW FilterArgType;
+#elif defined(TARGET_HAIKU)
+    typedef struct
+    {
+        mode_t st_mode;
+        struct dirent* entry;
+    } FilterArgType;
 #else
     typedef struct dirent FilterArgType;
 #endif
