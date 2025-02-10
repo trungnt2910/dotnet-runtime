@@ -10,6 +10,7 @@
 #ifdef TARGET_UNIX
 #include <sys/types.h>
 #include <dirent.h>
+#include <fcntl.h>
 #include <fnmatch.h>
 #endif
 
@@ -184,6 +185,16 @@ bool verbMerge::DirectoryFilterDirectories(FilterArgType* findData)
 
         return true;
     }
+#elif defined(TARGET_HAIKU)
+    if (S_ISDIR(findData->st_mode))
+    {
+        if (strcmp(findData->entry->d_name, ".") == 0)
+            return false;
+        if (strcmp(findData->entry->d_name, "..") == 0)
+            return false;
+
+        return true;
+    }
 #else // TARGET_WINDOWS
     if (findData->d_type == DT_DIR)
     {
@@ -206,6 +217,8 @@ bool verbMerge::DirectoryFilterFile(FilterArgType* findData)
 {
 #ifdef TARGET_WINDOWS
     if ((findData->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
+#elif defined(TARGET_HAIKU)
+    if (!S_ISDIR(findData->st_mode))
 #else // TARGET_WINDOWS
     if (findData->d_type != DT_DIR)
 #endif // TARGET_WINDOWS
@@ -281,9 +294,25 @@ int verbMerge::FilterDirectory(LPCWSTR                      dir,
         dirent *pEntry = readdir(pDir);
         while (pEntry != nullptr)
         {
+#ifdef TARGET_HAIKU
+            struct stat fileStat;
+            if (fstatat(dirfd(pDir), pEntry->d_name, &fileStat, AT_SYMLINK_NOFOLLOW) != 0)
+            {
+                break;
+            }
+
+            FilterArgType filterArg;
+            filterArg.st_mode = fileStat.st_mode;
+            filterArg.entry = pEntry;
+
+            if ((fnmatch(searchPatternUtf8.c_str(), pEntry->d_name, 0) == 0) && filter(&filterArg))
+            {
+                FindData findData(filterArg.st_mode, ConvertMultiByteToWideChar(pEntry->d_name));
+#else // TARGET_HAIKU
             if ((fnmatch(searchPatternUtf8.c_str(), pEntry->d_name, 0) == 0) && filter(pEntry))
             {
                 FindData findData(pEntry->d_type, ConvertMultiByteToWideChar(pEntry->d_name));
+#endif
                 first = new findDataList(&findData, first);
                 ++elemCount;
             }
