@@ -19,6 +19,7 @@ extern "C"
 }
 #endif
 
+#ifndef DACCESS_COMPILE
 static bool AllowR2RForImage(PEImage* pOwner)
 {
     // Allow R2R for files
@@ -33,7 +34,6 @@ static bool AllowR2RForImage(PEImage* pOwner)
     return false;
 }
 
-#ifndef DACCESS_COMPILE
 extern BOOL g_useDefaultBaseAddr;
 
 PEImageLayout* PEImageLayout::CreateFromByteArray(PEImage* pOwner, const BYTE* array, COUNT_T size)

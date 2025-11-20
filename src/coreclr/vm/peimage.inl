@@ -32,12 +32,14 @@ inline const SString &PEImage::GetPath()
     return m_path;
 }
 
+#ifndef DACCESS_COMPILE
 inline const SString& PEImage::GetPathToLoad()
 {
     LIMITED_METHOD_DAC_CONTRACT;
 
     return IsInBundle() ? m_probeExtensionResult.BundleLocation.Path() : m_path;
 }
+#endif // !DACCESS_COMPILE
 
 inline void* PEImage::GetExternalData(INT64* size)
 {
@@ -127,11 +129,13 @@ inline const SString &PEImage::GetModuleFileNameHintForDAC()
     return m_sModuleFileNameHintUsedByDac;
 }
 
+#ifndef DACCESS_COMPILE
 inline BOOL PEImage::IsFile()
 {
     WRAPPER_NO_CONTRACT;
     return !IsExternalData() && !GetPathToLoad().IsEmpty();
 }
+#endif // !DACCESS_COMPILE
 
 //
 // GetExistingLayout - get an layout corresponding to the specified mask, or null if none.
