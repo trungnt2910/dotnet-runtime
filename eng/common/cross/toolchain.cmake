@@ -209,7 +209,6 @@ elseif(ILLUMOS)
     set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} -lssp")
 elseif(HAIKU)
     set(CMAKE_SYSROOT "${CROSS_ROOTFS}")
-    set(CMAKE_PROGRAM_PATH "${CMAKE_PROGRAM_PATH};${CROSS_ROOTFS}/cross-tools-x86_64/bin")
 
     set(TOOLSET_PREFIX ${TOOLCHAIN}-)
     function(locate_toolchain_exec exec var)
@@ -231,12 +230,18 @@ elseif(HAIKU)
     endfunction()
 
     set(CMAKE_SYSTEM_PREFIX_PATH "${CROSS_ROOTFS}")
-
-    locate_toolchain_exec(gcc CMAKE_C_COMPILER)
-    locate_toolchain_exec(g++ CMAKE_CXX_COMPILER)
-
     set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES} -lssp")
     set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} -lssp")
+
+    if ($ENV{CCC_CC} MATCHES ".*gcc.*")
+        set(CMAKE_PROGRAM_PATH "${CMAKE_PROGRAM_PATH};${CROSS_ROOTFS}/cross-tools-x86_64/bin")
+        locate_toolchain_exec(gcc CMAKE_C_COMPILER)
+        locate_toolchain_exec(g++ CMAKE_CXX_COMPILER)
+    else()
+        set(CMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN "${CROSS_ROOTFS}/cross-tools-x86_64")
+        set(CMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN "${CROSS_ROOTFS}/cross-tools-x86_64")
+        set(CMAKE_ASM_COMPILER_EXTERNAL_TOOLCHAIN "${CROSS_ROOTFS}/cross-tools-x86_64")
+    endif()
 
     # let CMake set up the correct search paths
     include(Platform/Haiku)

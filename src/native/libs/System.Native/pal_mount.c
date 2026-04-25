@@ -32,7 +32,7 @@
 #endif
 
 // Android does not define MNTOPT_RO
-#ifndef MNTOPT_RO
+#if !defined(MNTOPT_RO) && (HAVE_SYS_MNTENT_H || HAVE_MNTENT_H)
 #define MNTOPT_RO "r"
 #endif
 #endif
@@ -100,7 +100,6 @@ int32_t SystemNative_GetAllMountPoints(MountPointFound onFound, void* context)
 }
 
 #elif defined(__HAIKU__)
-    (void)MNTOPT_RO;
     int32 cookie = 0;
     dev_t currentDev;
 
